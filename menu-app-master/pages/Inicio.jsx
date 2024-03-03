@@ -1,25 +1,10 @@
-import { FlatList, Text, StyleSheet, View } from "react-native";
-import { useState } from "react";
-import { ListItem } from "../components/ListItem";
+import React from "react";
+import { View, Text, StyleSheet } from "react-native";
 
-function Separator() {
-  return (
-    <View style={{ width: "100%", height: 1, backgroundColor: "#f3f3f3" }} />
-  );
-}
-
-export function Inicio() {
-  const [items, setItems] = useState(
-    Array.from(Array(50), (e, i) => "Item #" + i)
-  );
+function Home() {
   return (
     <View style={styles.container}>
-      <FlatList
-        ItemSeparatorComponent={Separator}
-        keyExtractor={(_, i) => i.toString()}
-        data={items}
-        renderItem={({ item }) => <ListItem text={item} />}
-      />
+      <Text style={styles.title}>Bienvenido, espero que tenga un bonito día</Text>
     </View>
   );
 }
@@ -27,6 +12,14 @@ export function Inicio() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  title: {
+    textAlign: 'center',
+    marginTop: 1,
+    marginBottom: 20,
   },
 });
+
+export default Home;
