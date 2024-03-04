@@ -3,6 +3,12 @@ import { createDrawerNavigator } from "@react-navigation/drawer";
 import Bodega  from '../pages/Bodega';
 import Clientes from '../pages/Clientes';
 import Inicio  from "../pages/Inicio";
+import Proveedores from '../pages/Proveedores';
+import Inventario from '../pages/Inventarios';
+import Login from '../pages/Login';
+import Empleado from '../pages/Empleado';
+import Productos from '../pages/Productos';
+
 
 const Menu = createDrawerNavigator();
 
@@ -10,14 +16,19 @@ export default function Administrador() {
   return (
     <Menu.Navigator>
       <Menu.Screen
-        name="Inicio"
+        name="INICIO"
         options={{
-          headerTitle: "Inicio",
+          headerTitle: "INICIO",
         }}
         component={Inicio}
+        styles={{backgroundColor: '#440000', color:  "white"}}
       />
-      <Menu.Screen name="Contacto" component={Bodega} />
-      <Menu.Screen name="Acercade" component={Clientes} />
+      <Menu.Screen name="BODEGA" component={Bodega} />
+      <Menu.Screen name="CLIENTE" component={Clientes} />
+      <Menu.Screen name="INVENTARIO" component={Inventario} />
+      <Menu.Screen name="PROVEEDORES" component={Proveedores} />
+      <Menu.Screen name="EMPLEADOS" component={Empleado} />
+      <Menu.Screen name="PRODUCTOS" component={Productos} />
     </Menu.Navigator>
   );
 }

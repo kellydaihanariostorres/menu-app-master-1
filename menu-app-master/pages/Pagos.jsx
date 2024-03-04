@@ -1,35 +1,36 @@
 import React from 'react';
 import { StyleSheet, Text, View, FlatList, TextInput, Button, TouchableOpacity, Modal, ScrollView } from 'react-native';
 
-export default class Productos extends React.Component {
+export default class Nomina extends React.Component {
   constructor(props) {
     super(props);
 
     this.state = {
       loading: false,
-      productos: [],
-      filteredProductos: [],
+      nominas: [],
+      filteredNominas: [],
       modalVisible: false,
-      nombreProducto: '',
-      precioProducto: '',
-      marcaProducto: '',
-      clasificacionProducto: '',
-      editingProductoId: null,
+      cuentaBancaria: '',
+      email: '',
+      telefono: '',
+      direccion: '',
+      fechaCreacion: '',
+      editingNominaId: null,
     };
   }
 
   componentDidMount() {
-    this.getProductos();
+    this.getNominas();
   }
 
-  getProductos = () => {
+  getNominas = () => {
     this.setState({ loading: true });
-    fetch('https://localhost:7284/api/productos')
+    fetch('https://localhost:7284/api/nomina')
       .then(res => res.json())
       .then(data => {
         this.setState({
-          productos: data,
-          filteredProductos: data,
+          nominas: data,
+          filteredNominas: data,
           loading: false
         });
       })
@@ -40,40 +41,41 @@ export default class Productos extends React.Component {
   };
 
   handleSearch = text => {
-    const filteredProductos = this.state.productos.filter(producto => {
-      return producto.nombreProducto.toLowerCase().includes(text.toLowerCase());
+    const filteredNominas = this.state.nominas.filter(nomina => {
+      return nomina.cuentaBancaria.toLowerCase().includes(text.toLowerCase());
     });
-    this.setState({ filteredProductos });
+    this.setState({ filteredNominas });
   };
 
-  handleEdit = productoId => {
-    const producto = this.state.productos.find(producto => producto.id === productoId);
+  handleEdit = nominaId => {
+    const nomina = this.state.nominas.find(nomina => nomina.nominaId === nominaId);
     this.setState({
-      nombreProducto: producto.nombreProducto,
-      precioProducto: producto.precioProducto,
-      marcaProducto: producto.marcaProducto,
-      clasificacionProducto: producto.clasificacionProducto,
-      editingProductoId: productoId,
+      cuentaBancaria: nomina.cuentaBancaria,
+      email: nomina.email,
+      telefono: nomina.telefono,
+      direccion: nomina.direccion,
+      fechaCreacion: nomina.fechaCreacion,
+      editingNominaId: nominaId,
       modalVisible: true,
     });
   };
 
-  handleDelete = async productoId => {
+  handleDelete = async nominaId => {
     try {
-      await fetch(`https://localhost:7284/api/productos/${productoId}`, { method: 'DELETE' });
-      this.getProductos();
+      await fetch(`https://localhost:7284/api/nomina/${nominaId}`, { method: 'DELETE' });
+      this.getNominas();
     } catch (error) {
-      console.error('Error deleting producto:', error);
+      console.error('Error deleting nomina:', error);
     }
   };
 
   handleSave = async () => {
-    const { nombreProducto, precioProducto, marcaProducto, clasificacionProducto, editingProductoId } = this.state;
-    const data = { nombreProducto, precioProducto, marcaProducto, clasificacionProducto };
-    const url = editingProductoId ? `https://localhost:7284/api/productos/${editingProductoId}` : 'https://localhost:7284/api/productos';
+    const { cuentaBancaria, email, telefono, direccion, fechaCreacion, editingNominaId } = this.state;
+    const data = { cuentaBancaria, email, telefono, direccion, fechaCreacion };
+    const url = editingNominaId ? `https://localhost:7284/api/nomina/${editingNominaId}` : 'https://localhost:7284/api/nomina';
 
     try {
-      const method = editingProductoId ? 'PUT' : 'POST';
+      const method = editingNominaId ? 'PUT' : 'POST';
       const response = await fetch(url, {
         method,
         headers: {
@@ -83,10 +85,10 @@ export default class Productos extends React.Component {
       });
       const responseData = await response.json();
       console.log('Response:', responseData);
-      this.getProductos();
-      this.setState({ modalVisible: false, nombreProducto: '', precioProducto: '', marcaProducto: '', clasificacionProducto: '', editingProductoId: null });
+      this.getNominas();
+      this.setState({ modalVisible: false, cuentaBancaria: '', email: '', telefono: '', direccion: '', fechaCreacion: '', editingNominaId: null });
     } catch (error) {
-      console.error('Error saving producto:', error);
+      console.error('Error saving nomina:', error);
     }
   };
 
@@ -108,7 +110,7 @@ export default class Productos extends React.Component {
 
           <TextInput
             style={styles.searchInput}
-            placeholder="Buscar producto"
+            placeholder="Buscar cuenta bancaria"
             onChangeText={this.handleSearch}
           />
         </View>
@@ -116,35 +118,37 @@ export default class Productos extends React.Component {
           <View>
             <View style={styles.row}>
               <Text style={[styles.tableHeader, { flex: 0.5, backgroundColor: '#440000' }]}>#</Text>
-              <Text style={[styles.tableHeader, { flex: 2, backgroundColor: '#440000' }]}>NOMBRE PRODUCTO</Text>
-              <Text style={[styles.tableHeader, { flex: 1, backgroundColor: '#440000' }]}>PRECIO PRODUCTO</Text>
-              <Text style={[styles.tableHeader, { flex: 2, backgroundColor: '#440000' }]}>MARCA PRODUCTO</Text>
-              <Text style={[styles.tableHeader, { flex: 2, backgroundColor: '#440000' }]}>CLASIFICACIÓN PRODUCTO</Text>
+              <Text style={[styles.tableHeader, { flex: 2, backgroundColor: '#440000' }]}>CUENTA BANCARIA</Text>
+              <Text style={[styles.tableHeader, { flex: 2, backgroundColor: '#440000' }]}>EMAIL</Text>
+              <Text style={[styles.tableHeader, { flex: 1.5, backgroundColor: '#440000' }]}>TELÉFONO</Text>
+              <Text style={[styles.tableHeader, { flex: 2, backgroundColor: '#440000' }]}>DIRECCIÓN</Text>
+              <Text style={[styles.tableHeader, { flex: 2, backgroundColor: '#440000' }]}>FECHA DE CREACIÓN</Text>
               <View style={[styles.tableHeader, { flex: 1, backgroundColor: '#440000' }]}></View>
             </View>
             <FlatList
               contentContainerStyle={styles.tableGroupDivider}
-              data={this.state.filteredProductos}
+              data={this.state.filteredNominas}
               renderItem={({ item, index }) => (
-                <TouchableOpacity onPress={() => this.handleEdit(item.id)}>
+                <TouchableOpacity onPress={() => this.handleEdit(item.nominaId)}>
                   <View style={styles.row}>
                     <Text style={[styles.item, { flex: 0.5 }]}>{index + 1}</Text>
-                    <Text style={[styles.item, { flex: 2 }]}>{item.nombreProducto}</Text>
-                    <Text style={[styles.item, { flex: 1 }]}>{item.precioProducto}</Text>
-                    <Text style={[styles.item, { flex: 2 }]}>{item.marcaProducto}</Text>
-                    <Text style={[styles.item, { flex: 2 }]}>{item.clasificacionProducto}</Text>
+                    <Text style={[styles.item, { flex: 2 }]}>{item.cuentaBancaria}</Text>
+                    <Text style={[styles.item, { flex: 2 }]}>{item.email}</Text>
+                    <Text style={[styles.item, { flex: 1.5 }]}>{item.telefono}</Text>
+                    <Text style={[styles.item, { flex: 2 }]}>{item.direccion}</Text>
+                    <Text style={[styles.item, { flex: 2 }]}>{item.fechaCreacion}</Text>
                     <View style={[styles.buttonGroup, { flex: 1 }]}>
-                      <TouchableOpacity onPress={() => this.handleEdit(item.id)}>
+                      <TouchableOpacity onPress={() => this.handleEdit(item.nominaId)}>
                         <Text style={[styles.button, styles.editButton]}>✎</Text>
                       </TouchableOpacity>
-                      <TouchableOpacity onPress={() => this.handleDelete(item.id)}>
+                      <TouchableOpacity onPress={() => this.handleDelete(item.nominaId)}>
                         <Text style={[styles.button, styles.deleteButton]}>🗑</Text>
                       </TouchableOpacity>
                     </View>
                   </View>
                 </TouchableOpacity>
               )}
-              keyExtractor={item => item.id}
+              keyExtractor={item => item.nominaId}
             />
           </View>
         </ScrollView>
@@ -156,27 +160,33 @@ export default class Productos extends React.Component {
         >
           <View style={styles.modalContainer}>
             <TextInput
-              placeholder="Nombre Producto"
-              value={this.state.nombreProducto}
-              onChangeText={nombreProducto => this.setState({ nombreProducto })}
+              placeholder="Cuenta Bancaria"
+              value={this.state.cuentaBancaria}
+              onChangeText={cuentaBancaria => this.setState({ cuentaBancaria })}
               style={styles.input}
             />
             <TextInput
-              placeholder="Precio Producto"
-              value={this.state.precioProducto}
-              onChangeText={precioProducto => this.setState({ precioProducto })}
+              placeholder="Email"
+              value={this.state.email}
+              onChangeText={email => this.setState({ email })}
               style={styles.input}
             />
             <TextInput
-              placeholder="Marca Producto"
-              value={this.state.marcaProducto}
-              onChangeText={marcaProducto => this.setState({ marcaProducto })}
+              placeholder="Teléfono"
+              value={this.state.telefono}
+              onChangeText={telefono => this.setState({ telefono })}
               style={styles.input}
             />
             <TextInput
-              placeholder="Clasificación Producto"
-              value={this.state.clasificacionProducto}
-              onChangeText={clasificacionProducto => this.setState({ clasificacionProducto })}
+              placeholder="Dirección"
+              value={this.state.direccion}
+              onChangeText={direccion => this.setState({ direccion })}
+              style={styles.input}
+            />
+            <TextInput
+              placeholder="Fecha de Creación"
+              value={this.state.fechaCreacion}
+              onChangeText={fechaCreacion => this.setState({ fechaCreacion })}
               style={styles.input}
             />
             <TouchableOpacity onPress={this.handleSave} style={styles.buttont}>

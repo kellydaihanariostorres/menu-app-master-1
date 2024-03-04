@@ -1,35 +1,38 @@
 import React from 'react';
 import { StyleSheet, Text, View, FlatList, TextInput, Button, TouchableOpacity, Modal, ScrollView } from 'react-native';
 
-export default class Productos extends React.Component {
+export default class Inventario extends React.Component {
   constructor(props) {
     super(props);
 
     this.state = {
       loading: false,
-      productos: [],
-      filteredProductos: [],
+      inventarios: [],
+      filteredInventarios: [],
       modalVisible: false,
       nombreProducto: '',
+      idProducto: '',
+      idFactura: '',
       precioProducto: '',
+      cantidadProducto: '',
       marcaProducto: '',
       clasificacionProducto: '',
-      editingProductoId: null,
+      editingInventarioId: null,
     };
   }
 
   componentDidMount() {
-    this.getProductos();
+    this.getInventarios();
   }
 
-  getProductos = () => {
+  getInventarios = () => {
     this.setState({ loading: true });
-    fetch('https://localhost:7284/api/productos')
+    fetch('https://localhost:7284/api/inventarios')
       .then(res => res.json())
       .then(data => {
         this.setState({
-          productos: data,
-          filteredProductos: data,
+          inventarios: data,
+          filteredInventarios: data,
           loading: false
         });
       })
@@ -40,40 +43,43 @@ export default class Productos extends React.Component {
   };
 
   handleSearch = text => {
-    const filteredProductos = this.state.productos.filter(producto => {
-      return producto.nombreProducto.toLowerCase().includes(text.toLowerCase());
+    const filteredInventarios = this.state.inventarios.filter(inventario => {
+      return inventario.nombreProducto.toLowerCase().includes(text.toLowerCase());
     });
-    this.setState({ filteredProductos });
+    this.setState({ filteredInventarios });
   };
 
-  handleEdit = productoId => {
-    const producto = this.state.productos.find(producto => producto.id === productoId);
+  handleEdit = id => {
+    const inventario = this.state.inventarios.find(inventario => inventario.id === id);
     this.setState({
-      nombreProducto: producto.nombreProducto,
-      precioProducto: producto.precioProducto,
-      marcaProducto: producto.marcaProducto,
-      clasificacionProducto: producto.clasificacionProducto,
-      editingProductoId: productoId,
+      nombreProducto: inventario.nombreProducto,
+      idProducto: inventario.idProducto,
+      idFactura: inventario.idFactura,
+      precioProducto: inventario.precioProducto,
+      cantidadProducto: inventario.cantidadProducto,
+      marcaProducto: inventario.marcaProducto,
+      clasificacionProducto: inventario.clasificacionProducto,
+      editingInventarioId: id,
       modalVisible: true,
     });
   };
 
-  handleDelete = async productoId => {
+  handleDelete = async id => {
     try {
-      await fetch(`https://localhost:7284/api/productos/${productoId}`, { method: 'DELETE' });
-      this.getProductos();
+      await fetch(`https://localhost:7284/api/inventarios/${id}`, { method: 'DELETE' });
+      this.getInventarios();
     } catch (error) {
-      console.error('Error deleting producto:', error);
+      console.error('Error deleting inventario:', error);
     }
   };
 
   handleSave = async () => {
-    const { nombreProducto, precioProducto, marcaProducto, clasificacionProducto, editingProductoId } = this.state;
-    const data = { nombreProducto, precioProducto, marcaProducto, clasificacionProducto };
-    const url = editingProductoId ? `https://localhost:7284/api/productos/${editingProductoId}` : 'https://localhost:7284/api/productos';
+    const { nombreProducto, idProducto, idFactura, precioProducto, cantidadProducto, marcaProducto, clasificacionProducto, editingInventarioId } = this.state;
+    const data = { nombreProducto, idProducto, idFactura, precioProducto, cantidadProducto, marcaProducto, clasificacionProducto };
+    const url = editingInventarioId ? `https://localhost:7284/api/inventarios/${editingInventarioId}` : 'https://localhost:7284/api/inventarios';
 
     try {
-      const method = editingProductoId ? 'PUT' : 'POST';
+      const method = editingInventarioId ? 'PUT' : 'POST';
       const response = await fetch(url, {
         method,
         headers: {
@@ -83,10 +89,10 @@ export default class Productos extends React.Component {
       });
       const responseData = await response.json();
       console.log('Response:', responseData);
-      this.getProductos();
-      this.setState({ modalVisible: false, nombreProducto: '', precioProducto: '', marcaProducto: '', clasificacionProducto: '', editingProductoId: null });
+      this.getInventarios();
+      this.setState({ modalVisible: false, nombreProducto: '', idProducto: '', idFactura: '', precioProducto: '', cantidadProducto: '', marcaProducto: '', clasificacionProducto: '', editingInventarioId: null });
     } catch (error) {
-      console.error('Error saving producto:', error);
+      console.error('Error saving inventario:', error);
     }
   };
 
@@ -116,23 +122,29 @@ export default class Productos extends React.Component {
           <View>
             <View style={styles.row}>
               <Text style={[styles.tableHeader, { flex: 0.5, backgroundColor: '#440000' }]}>#</Text>
-              <Text style={[styles.tableHeader, { flex: 2, backgroundColor: '#440000' }]}>NOMBRE PRODUCTO</Text>
+              <Text style={[styles.tableHeader, { flex: 1.5, backgroundColor: '#440000' }]}>NOMBRE PRODUCTO</Text>
+              <Text style={[styles.tableHeader, { flex: 1, backgroundColor: '#440000' }]}>ID PRODUCTO</Text>
+              <Text style={[styles.tableHeader, { flex: 1, backgroundColor: '#440000' }]}>ID FACTURA</Text>
               <Text style={[styles.tableHeader, { flex: 1, backgroundColor: '#440000' }]}>PRECIO PRODUCTO</Text>
-              <Text style={[styles.tableHeader, { flex: 2, backgroundColor: '#440000' }]}>MARCA PRODUCTO</Text>
-              <Text style={[styles.tableHeader, { flex: 2, backgroundColor: '#440000' }]}>CLASIFICACIÓN PRODUCTO</Text>
+              <Text style={[styles.tableHeader, { flex: 1, backgroundColor: '#440000' }]}>CANTIDAD PRODUCTO</Text>
+              <Text style={[styles.tableHeader, { flex: 1, backgroundColor: '#440000' }]}>MARCA PRODUCTO</Text>
+              <Text style={[styles.tableHeader, { flex: 1, backgroundColor: '#440000' }]}>CLASIFICACIÓN PRODUCTO</Text>
               <View style={[styles.tableHeader, { flex: 1, backgroundColor: '#440000' }]}></View>
             </View>
             <FlatList
               contentContainerStyle={styles.tableGroupDivider}
-              data={this.state.filteredProductos}
+              data={this.state.filteredInventarios}
               renderItem={({ item, index }) => (
                 <TouchableOpacity onPress={() => this.handleEdit(item.id)}>
                   <View style={styles.row}>
                     <Text style={[styles.item, { flex: 0.5 }]}>{index + 1}</Text>
-                    <Text style={[styles.item, { flex: 2 }]}>{item.nombreProducto}</Text>
+                    <Text style={[styles.item, { flex: 1.5 }]}>{item.nombreProducto}</Text>
+                    <Text style={[styles.item, { flex: 1 }]}>{item.idProducto}</Text>
+                    <Text style={[styles.item, { flex: 1 }]}>{item.idFactura}</Text>
                     <Text style={[styles.item, { flex: 1 }]}>{item.precioProducto}</Text>
-                    <Text style={[styles.item, { flex: 2 }]}>{item.marcaProducto}</Text>
-                    <Text style={[styles.item, { flex: 2 }]}>{item.clasificacionProducto}</Text>
+                    <Text style={[styles.item, { flex: 1 }]}>{item.cantidadProducto}</Text>
+                    <Text style={[styles.item, { flex: 1 }]}>{item.marcaProducto}</Text>
+                    <Text style={[styles.item, { flex: 1 }]}>{item.clasificacionProducto}</Text>
                     <View style={[styles.buttonGroup, { flex: 1 }]}>
                       <TouchableOpacity onPress={() => this.handleEdit(item.id)}>
                         <Text style={[styles.button, styles.editButton]}>✎</Text>
@@ -162,9 +174,27 @@ export default class Productos extends React.Component {
               style={styles.input}
             />
             <TextInput
+              placeholder="ID Producto"
+              value={this.state.idProducto}
+              onChangeText={idProducto => this.setState({ idProducto })}
+              style={styles.input}
+            />
+            <TextInput
+              placeholder="ID Factura"
+              value={this.state.idFactura}
+              onChangeText={idFactura => this.setState({ idFactura })}
+              style={styles.input}
+            />
+            <TextInput
               placeholder="Precio Producto"
               value={this.state.precioProducto}
               onChangeText={precioProducto => this.setState({ precioProducto })}
+              style={styles.input}
+            />
+            <TextInput
+              placeholder="Cantidad Producto"
+              value={this.state.cantidadProducto}
+              onChangeText={cantidadProducto => this.setState({ cantidadProducto })}
               style={styles.input}
             />
             <TextInput

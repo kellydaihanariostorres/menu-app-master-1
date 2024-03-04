@@ -10,9 +10,9 @@ export default function Administrador() {
   return (
     <Menu.Navigator>
       <Menu.Screen
-        name="Inicio"
+        name="INICIO"
         options={{
-          headerTitle: "Inicio",
+          headerTitle: "INICIO",
         }}
         component={Inicio}
       />
