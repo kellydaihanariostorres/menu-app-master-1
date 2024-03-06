@@ -94,17 +94,20 @@ export default class Bodega extends React.Component {
     return (
       <View style={styles.container}>
         <View style={styles.buttonContainer}>
-        <TouchableOpacity
-          onPress={() => this.setState({ modalVisible: true })}
-          style={{
-            backgroundColor: '#440000',
-            padding: 10,
-            borderRadius: 5,
-            marginBottom: 10,
-          }}
-        >
-          <Text style={{ color: 'white' }}>Agregar</Text>
-        </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => this.setState({ modalVisible: true })}
+            style={{
+              backgroundColor: '#440000',
+              padding: 10,
+              borderRadius: 50,
+              marginBottom: 10,
+            }}
+          >
+            <Text style={{ color: 'white' }}>Agregar</Text>
+          </TouchableOpacity>
+
+          {/* Agregar un View para crear un espacio */}
+          <View style={{ width: 10 }} />
 
           <TextInput
             style={styles.searchInput}
@@ -142,6 +145,7 @@ export default class Bodega extends React.Component {
               </View>
             </TouchableOpacity>
           )}
+          
           keyExtractor={item => item.bodegaId}
         />
 
@@ -150,6 +154,8 @@ export default class Bodega extends React.Component {
         animationType="slide"
         onRequestClose={() => this.setState({ modalVisible: false })}
       >
+        
+        
         <View style={styles.modalContainer}>
           <TextInput
             placeholder="Nombre"
@@ -205,7 +211,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     flex: 1,
     paddingLeft: 10,
-    borderRadius: '45px',
+    borderRadius: '10px',
     color :'black',
     backgroundColor: 'white',
     marginBottom: 10,
@@ -224,28 +230,28 @@ const styles = StyleSheet.create({
   },
   buttonGroup: {
     flexDirection: 'row',
+    justifyContent: 'space-around',
   },
   button: {
     padding: 5,
-    borderRadius: 5,
-    marginRight: 10,
+    borderRadius: 5, // Ajuste: Cambiar a 5 para que sea ovalado
     textAlign: 'center',
     borderWidth: 1,
   },
   editButton: {
     backgroundColor: '#440000',
     color: 'white',
-    marginBottom: 10,
   },
   deleteButton: {
     backgroundColor: '#440000',
     color: 'white',
-    marginBottom: 10,
   },
   modalContainer: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: 'white',
+    padding: 20,
   },
   input: {
     height: 40,
@@ -254,6 +260,18 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     marginBottom: 10,
     paddingLeft: 10,
+  },
+  buttont: {
+    backgroundColor: '#440000', // Color de fondo del botón
+    padding: 10, // Espaciado interno del botón
+    borderRadius: 50, // Bordes redondeados del botón
+    marginBottom: 10, // Espaciado inferior del botón
+    width: '40%', // Ancho del botón
+    alignItems: 'center', // Alinear contenido del botón al centro
+  },
+  buttonText: {
+    color: 'white', // Color del texto del botón
+    fontWeight: 'bold', // Negrita del texto del botón
   },
   tableHeader: {
     flex: 1,
@@ -264,37 +282,5 @@ const styles = StyleSheet.create({
   tableGroupDivider: {
     backgroundColor: '#dcdcdc',
   },
-  divider: {
-    width: 1, // Ancho de la línea vertical
-    height: '100%', // Altura igual a la altura del contenedor
-    backgroundColor: 'white', // Color de la línea vertical
-    marginHorizontal: 5, // Margen horizontal para separar la línea de los elementos
-  },
-  modalContainer: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'white', // Color de fondo del modal
-    padding: 20, // Espaciado interno del modal
-  },
-  input: {
-    height: 40,
-    width: '100%',
-    borderColor: 'gray',
-    borderWidth: 1,
-    marginBottom: 10,
-    paddingLeft: 10,
-  },
-  buttont: {
-    backgroundColor: '#440000', // Color de fondo del botón
-    padding: 10, // Espaciado interno del botón
-    borderRadius: 5, // Bordes redondeados del botón
-    marginBottom: 10, // Espaciado inferior del botón
-    width: '100%', // Ancho del botón
-    alignItems: 'center', // Alinear contenido del botón al centro
-  },
-  buttonText: {
-    color: 'white', // Color del texto del botón
-    fontWeight: 'bold', // Negrita del texto del botón
-  },
 });
+

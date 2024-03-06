@@ -105,12 +105,16 @@ export default class Proveedores extends React.Component {
             style={{
               backgroundColor: '#440000',
               padding: 10,
-              borderRadius: 5,
+              borderRadius: 50,
               marginBottom: 10,
             }}
           >
             <Text style={{ color: 'white' }}>Agregar</Text>
           </TouchableOpacity>
+
+          {/* Agregar un View para crear un espacio */}
+          <View style={{ width: 10 }} />
+
 
           <TextInput
             style={styles.searchInput}
@@ -118,31 +122,31 @@ export default class Proveedores extends React.Component {
             onChangeText={this.handleSearch}
           />
         </View>
-        <ScrollView horizontal>
-          <View>
+        
+        <View>
             <View style={styles.row}>
               <Text style={[styles.tableHeader, { flex: 0.5, backgroundColor: '#440000' }]}>#</Text>
-              <Text style={[styles.tableHeader, { flex: 2, backgroundColor: '#440000' }]}>NOMBRE</Text>
+              <Text style={[styles.tableHeader, { flex: 1, backgroundColor: '#440000' }]}>NOMBRE</Text>
               <Text style={[styles.tableHeader, { flex: 1, backgroundColor: '#440000' }]}>NÚM. DOCUMENTO</Text>
-              <Text style={[styles.tableHeader, { flex: 1, backgroundColor: '#440000' }]}>EDAD</Text>
-              <Text style={[styles.tableHeader, { flex: 2, backgroundColor: '#440000' }]}>TELÉFONO</Text>
-              <Text style={[styles.tableHeader, { flex: 2, backgroundColor: '#440000' }]}>CORREO</Text>
+              <Text style={[styles.tableHeader, { flex: 0.5, backgroundColor: '#440000' }]}>EDAD</Text>
+              <Text style={[styles.tableHeader, { flex: 1.5, backgroundColor: '#440000' }]}>TÉLEFONO</Text>
+              <Text style={[styles.tableHeader, { flex: 1.5, backgroundColor: '#440000' }]}>CORREO</Text>
               <Text style={[styles.tableHeader, { flex: 2, backgroundColor: '#440000' }]}>ENTIDAD BANCARIA</Text>
               <Text style={[styles.tableHeader, { flex: 2, backgroundColor: '#440000' }]}>NÚM. CUENTA BANCARIA</Text>
               <View style={[styles.tableHeader, { flex: 1, backgroundColor: '#440000' }]}></View>
             </View>
             <FlatList
               contentContainerStyle={styles.tableGroupDivider}
-              data={this.state.filteredProveedores}
+              data={this.state.filteredClientes}
               renderItem={({ item, index }) => (
-                <TouchableOpacity onPress={() => this.handleEdit(item.id)}>
+                <TouchableOpacity onPress={() => this.handleEdit(item.clienteId)}>
                   <View style={styles.row}>
                     <Text style={[styles.item, { flex: 0.5 }]}>{index + 1}</Text>
-                    <Text style={[styles.item, { flex: 2 }]}>{item.nombre}</Text>
+                    <Text style={[styles.item, { flex: 1 }]}>{item.nombre}</Text>
                     <Text style={[styles.item, { flex: 1 }]}>{item.numDocumento}</Text>
-                    <Text style={[styles.item, { flex: 1 }]}>{item.edad}</Text>
-                    <Text style={[styles.item, { flex: 2 }]}>{item.telefono}</Text>
-                    <Text style={[styles.item, { flex: 2 }]}>{item.correo}</Text>
+                    <Text style={[styles.item, { flex: 0.5 }]}>{item.edad}</Text>
+                    <Text style={[styles.item, { flex: 1.5 }]}>{item.telefono}</Text>
+                    <Text style={[styles.item, { flex: 1.5 }]}>{item.correo}</Text>
                     <Text style={[styles.item, { flex: 2 }]}>{item.nombreEntidadBancaria}</Text>
                     <Text style={[styles.item, { flex: 2 }]}>{item.numeroCuentaBancaria}</Text>
                     <View style={[styles.buttonGroup, { flex: 1 }]}>
@@ -156,10 +160,11 @@ export default class Proveedores extends React.Component {
                   </View>
                 </TouchableOpacity>
               )}
-              keyExtractor={item => item.id}
+              keyExtractor={item => item.clienteId}
             />
           </View>
-        </ScrollView>
+        
+
 
         <Modal
           visible={this.state.modalVisible}
@@ -239,8 +244,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     flex: 1,
     paddingLeft: 10,
-    borderRadius: 5,
-    color: 'black',
+    borderRadius: '10px',
+    color :'black',
     backgroundColor: 'white',
     marginBottom: 10,
   },
@@ -262,7 +267,7 @@ const styles = StyleSheet.create({
   },
   button: {
     padding: 5,
-    borderRadius: 5,
+    borderRadius: 5, // Ajuste: Cambiar a 5 para que sea ovalado
     textAlign: 'center',
     borderWidth: 1,
   },
@@ -290,16 +295,16 @@ const styles = StyleSheet.create({
     paddingLeft: 10,
   },
   buttont: {
-    backgroundColor: '#440000',
-    padding: 10,
-    borderRadius: 5,
-    marginBottom: 10,
-    width: '100%',
-    alignItems: 'center',
+    backgroundColor: '#440000', // Color de fondo del botón
+    padding: 10, // Espaciado interno del botón
+    borderRadius: 50, // Bordes redondeados del botón
+    marginBottom: 10, // Espaciado inferior del botón
+    width: '40%', // Ancho del botón
+    alignItems: 'center', // Alinear contenido del botón al centro
   },
   buttonText: {
-    color: 'white',
-    fontWeight: 'bold',
+    color: 'white', // Color del texto del botón
+    fontWeight: 'bold', // Negrita del texto del botón
   },
   tableHeader: {
     flex: 1,
@@ -311,3 +316,5 @@ const styles = StyleSheet.create({
     backgroundColor: '#dcdcdc',
   },
 });
+
+

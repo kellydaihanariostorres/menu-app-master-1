@@ -107,20 +107,21 @@ export default class Empleado extends React.Component {
             style={{
               backgroundColor: '#440000',
               padding: 10,
-              borderRadius: 5,
+              borderRadius: 50,
               marginBottom: 10,
             }}
           >
             <Text style={{ color: 'white' }}>Agregar</Text>
           </TouchableOpacity>
-
+            {/* Agregar un View para crear un espacio */}
+          <View style={{ width: 10 }} />
           <TextInput
             style={styles.searchInput}
             placeholder="Buscar empleado"
             onChangeText={this.handleSearch}
           />
         </View>
-        <ScrollView horizontal>
+        
           <View>
             <View style={styles.row}>
               <Text style={[styles.tableHeader, { flex: 0.5, backgroundColor: '#440000' }]}>#</Text>
@@ -163,7 +164,7 @@ export default class Empleado extends React.Component {
               keyExtractor={item => item.empleadoId}
             />
           </View>
-        </ScrollView>
+        
 
         <Modal
           visible={this.state.modalVisible}
@@ -249,8 +250,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     flex: 1,
     paddingLeft: 10,
-    borderRadius: 5,
-    color: 'black',
+    borderRadius: '10px',
+    color :'black',
     backgroundColor: 'white',
     marginBottom: 10,
   },
@@ -272,7 +273,7 @@ const styles = StyleSheet.create({
   },
   button: {
     padding: 5,
-    borderRadius: 5,
+    borderRadius: 5, // Ajuste: Cambiar a 5 para que sea ovalado
     textAlign: 'center',
     borderWidth: 1,
   },
@@ -300,16 +301,16 @@ const styles = StyleSheet.create({
     paddingLeft: 10,
   },
   buttont: {
-    backgroundColor: '#440000',
-    padding: 10,
-    borderRadius: 5,
-    marginBottom: 10,
-    width: '100%',
-    alignItems: 'center',
+    backgroundColor: '#440000', // Color de fondo del botón
+    padding: 10, // Espaciado interno del botón
+    borderRadius: 50, // Bordes redondeados del botón
+    marginBottom: 10, // Espaciado inferior del botón
+    width: '40%', // Ancho del botón
+    alignItems: 'center', // Alinear contenido del botón al centro
   },
   buttonText: {
-    color: 'white',
-    fontWeight: 'bold',
+    color: 'white', // Color del texto del botón
+    fontWeight: 'bold', // Negrita del texto del botón
   },
   tableHeader: {
     flex: 1,
@@ -321,3 +322,4 @@ const styles = StyleSheet.create({
     backgroundColor: '#dcdcdc',
   },
 });
+

@@ -21,7 +21,7 @@ export default function Administrador() {
           headerTitle: "INICIO",
         }}
         component={Inicio}
-        styles={{backgroundColor: '#440000', color:  "white"}}
+        styles={{backgroundColor: '#440000', color:  "#440000"}}
       />
       <Menu.Screen name="BODEGA" component={Bodega} />
       <Menu.Screen name="CLIENTE" component={Clientes} />

@@ -1,7 +1,7 @@
 import React from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import Login from './pages/Login';
+import IniciarSesion from './pages/Login';
 import Administrador from './Usuarios/Administrador';
 import Caja from './Usuarios/Caja';
 import Bodega from './Usuarios/Bodega';
@@ -12,11 +12,11 @@ const Stack = createNativeStackNavigator();
 const App = () => {
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName="Login">
+      <Stack.Navigator initialRouteName="Iniciar sesión">
         <Stack.Screen
-          name="Login"
-          component={Login}
-          options={{ headerShown: false, title: "Login" }}
+          name="Iniciar sesión"
+          component={IniciarSesion}
+          options={{ headerShown: false, title: "Iniciar sesión" }}
         />
         <Stack.Screen
           name="Administrador"

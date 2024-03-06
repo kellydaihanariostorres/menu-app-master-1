@@ -41,18 +41,21 @@ const Login = ({ navigation }) => {
             value={username}
             onChangeText={(text) => setUsername(text)}
           />
-          <Text style={styles.label}>Contraseña</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Contraseña"
-            secureTextEntry={true}
-            value={password}
-            onChangeText={(text) => setPassword(text)}
-          />
+          <View style={styles.inputWrapper}>
+            <Text style={styles.label}>Contraseña</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Contraseña"
+              secureTextEntry={true}
+              value={password}
+              onChangeText={(text) => setPassword(text)}
+            />
+          </View>
           <Text style={styles.label}>Cargo</Text>
           <Picker
             selectedValue={selectedRole}
             style={styles.picker}
+            itemStyle={styles.pickerItem}
             onValueChange={(itemValue) => setSelectedRole(itemValue)}
           >
             <Picker.Item label="Administrador" value="1" />
@@ -75,15 +78,17 @@ const Login = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#444444',
+    backgroundColor: '#640000', // Fondo vino tinto
     justifyContent: 'center',
     alignItems: 'center',
   },
   card: {
     width: '80%',
     padding: 20,
-    backgroundColor: '#9c0101',
-    borderRadius: 10,
+    backgroundColor: 'black', // Tarjeta negra
+    borderRadius: 0, // Sin bordes redondeados
+    borderBottomLeftRadius: 0, // Esquina inferior izquierda puntiaguda
+    borderBottomRightRadius: 0, // Esquina inferior derecha puntiaguda
   },
   title: {
     fontSize: 20,
@@ -98,27 +103,37 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: 'white',
     marginBottom: 5,
+    textAlign: 'center', // Centra el texto
+  },
+  inputWrapper: {
+    marginBottom: 10,
   },
   input: {
-    backgroundColor: '#640000',
+    backgroundColor: 'black', // Fondo negro
     color: 'white',
-    borderWidth: 1,
-    borderColor: '#4c0101',
-    borderRadius: 5,
+    borderWidth: 0,
+    borderBottomWidth: 1, // Línea inferior
+    borderColor: 'white', // Borde blanco
     padding: 10,
-    marginBottom: 10,
+    marginBottom: 5,
+    textAlign: 'left', // Centra el texto
   },
   picker: {
-    backgroundColor: '#640000',
+    backgroundColor: '#800020', // Fondo vino tinto
     color: 'white',
     borderWidth: 1,
-    borderColor: '#4c0101',
+    borderColor: 'black', // Borde blanco
     borderRadius: 5,
     marginBottom: 10,
+    width: '25%', // Hacer la barra desplegable más corta
+    textAlign: 'center',
+  },
+  pickerItem: {
+    color: 'white',
   },
   button: {
     backgroundColor: '#640000',
-    borderRadius: 5,
+    borderRadius: 50,
     padding: 10,
     marginTop: 20,
   },

@@ -93,18 +93,21 @@ export default class Productos extends React.Component {
   render() {
     return (
       <View style={styles.container}>
-        <View style={styles.buttonContainer}>
+          <View style={styles.buttonContainer}>
           <TouchableOpacity
             onPress={() => this.setState({ modalVisible: true })}
             style={{
               backgroundColor: '#440000',
               padding: 10,
-              borderRadius: 5,
+              borderRadius: 50,
               marginBottom: 10,
             }}
           >
             <Text style={{ color: 'white' }}>Agregar</Text>
           </TouchableOpacity>
+
+          {/* Agregar un View para crear un espacio */}
+          <View style={{ width: 10 }} />
 
           <TextInput
             style={styles.searchInput}
@@ -112,15 +115,15 @@ export default class Productos extends React.Component {
             onChangeText={this.handleSearch}
           />
         </View>
-        <ScrollView horizontal>
+        
           <View>
             <View style={styles.row}>
               <Text style={[styles.tableHeader, { flex: 0.5, backgroundColor: '#440000' }]}>#</Text>
               <Text style={[styles.tableHeader, { flex: 2, backgroundColor: '#440000' }]}>NOMBRE PRODUCTO</Text>
-              <Text style={[styles.tableHeader, { flex: 1, backgroundColor: '#440000' }]}>PRECIO PRODUCTO</Text>
+              <Text style={[styles.tableHeader, { flex: 2, backgroundColor: '#440000' }]}>PRECIO PRODUCTO</Text>
               <Text style={[styles.tableHeader, { flex: 2, backgroundColor: '#440000' }]}>MARCA PRODUCTO</Text>
-              <Text style={[styles.tableHeader, { flex: 2, backgroundColor: '#440000' }]}>CLASIFICACIÓN PRODUCTO</Text>
-              <View style={[styles.tableHeader, { flex: 1, backgroundColor: '#440000' }]}></View>
+              <Text style={[styles.tableHeader, { flex: 1, backgroundColor: '#440000' }]}>CLASIFICACIÓN PRODUCTO</Text>
+              <View style={[styles.tableHeader, { flex: 3, backgroundColor: '#440000' }]}></View>
             </View>
             <FlatList
               contentContainerStyle={styles.tableGroupDivider}
@@ -130,9 +133,9 @@ export default class Productos extends React.Component {
                   <View style={styles.row}>
                     <Text style={[styles.item, { flex: 0.5 }]}>{index + 1}</Text>
                     <Text style={[styles.item, { flex: 2 }]}>{item.nombreProducto}</Text>
-                    <Text style={[styles.item, { flex: 1 }]}>{item.precioProducto}</Text>
-                    <Text style={[styles.item, { flex: 2 }]}>{item.marcaProducto}</Text>
-                    <Text style={[styles.item, { flex: 2 }]}>{item.clasificacionProducto}</Text>
+                    <Text style={[styles.item, { flex: 2 }]}>{item.precioProducto}</Text>
+                    <Text style={[styles.item, { flex: 1 }]}>{item.marcaProducto}</Text>
+                    <Text style={[styles.item, { flex: 3 }]}>{item.clasificacionProducto}</Text>
                     <View style={[styles.buttonGroup, { flex: 1 }]}>
                       <TouchableOpacity onPress={() => this.handleEdit(item.id)}>
                         <Text style={[styles.button, styles.editButton]}>✎</Text>
@@ -147,7 +150,7 @@ export default class Productos extends React.Component {
               keyExtractor={item => item.id}
             />
           </View>
-        </ScrollView>
+        
 
         <Modal
           visible={this.state.modalVisible}
@@ -209,14 +212,14 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     flex: 1,
     paddingLeft: 10,
-    borderRadius: 5,
-    color: 'black',
+    borderRadius: '10px',
+    color :'black',
     backgroundColor: 'white',
     marginBottom: 10,
   },
   row: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'flex-start',
     borderBottomWidth: 1,
     borderBottomColor: 'gray',
     paddingVertical: 10,
@@ -228,13 +231,15 @@ const styles = StyleSheet.create({
   },
   buttonGroup: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
+    justifyContent: 'flex-end',
+    width: '100%', // modified
   },
   button: {
     padding: 5,
-    borderRadius: 5,
+    borderRadius: 50,
     textAlign: 'center',
     borderWidth: 1,
+    marginLeft: 5,
   },
   editButton: {
     backgroundColor: '#440000',
@@ -260,12 +265,12 @@ const styles = StyleSheet.create({
     paddingLeft: 10,
   },
   buttont: {
-    backgroundColor: '#440000',
-    padding: 10,
-    borderRadius: 5,
-    marginBottom: 10,
-    width: '100%',
-    alignItems: 'center',
+    backgroundColor: '#440000', // Color de fondo del botón
+    padding: 10, // Espaciado interno del botón
+    borderRadius: 50, // Bordes redondeados del botón
+    marginBottom: 10, // Espaciado inferior del botón
+    width: '40%', // Ancho del botón
+    alignItems: 'center', // Alinear contenido del botón al centro
   },
   buttonText: {
     color: 'white',
@@ -276,6 +281,10 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     color: 'white',
     paddingVertical: 5,
+    backgroundColor: '#440000',
+    minWidth: 100,
+    justifyContent: 'center', // modified
+    alignItems: 'center', // modified
   },
   tableGroupDivider: {
     backgroundColor: '#dcdcdc',
