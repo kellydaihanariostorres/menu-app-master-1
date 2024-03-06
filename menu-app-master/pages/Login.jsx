@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Pressable, StyleSheet, Alert, Picker } from 'react-native';
+import { View, Text, TextInput, Pressable, StyleSheet, Image } from 'react-native';
+
 
 const Login = ({ navigation }) => {
   const [username, setUsername] = useState("");
@@ -32,6 +33,7 @@ const Login = ({ navigation }) => {
   return (
     <View style={styles.container}>
       <View style={styles.card}>
+        <Image source={require('../assets/logoempresa.png')} style={styles.logo} />
         <Text style={styles.title}>BIENVENIDO</Text>
         <View style={styles.form}>
           <Text style={styles.label}>Usuario</Text>
@@ -51,18 +53,6 @@ const Login = ({ navigation }) => {
               onChangeText={(text) => setPassword(text)}
             />
           </View>
-          <Text style={styles.label}>Cargo</Text>
-          <Picker
-            selectedValue={selectedRole}
-            style={styles.picker}
-            itemStyle={styles.pickerItem}
-            onValueChange={(itemValue) => setSelectedRole(itemValue)}
-          >
-            <Picker.Item label="Administrador" value="1" />
-            <Picker.Item label="Bodega" value="2" />
-            <Picker.Item label="Contador" value="3" />
-            <Picker.Item label="Caja" value="4" />
-          </Picker>
         </View>
         <Pressable
           style={styles.button}
@@ -81,6 +71,14 @@ const styles = StyleSheet.create({
     backgroundColor: '#640000', // Fondo vino tinto
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  logo: {
+    width: 95,
+    height: 95,
+    marginBottom: 10,
+    top: 2,
+    left: 117,
+    borderRadius: 60
   },
   card: {
     width: '80%',
@@ -117,19 +115,6 @@ const styles = StyleSheet.create({
     padding: 10,
     marginBottom: 5,
     textAlign: 'left', // Centra el texto
-  },
-  picker: {
-    backgroundColor: '#800020', // Fondo vino tinto
-    color: 'white',
-    borderWidth: 1,
-    borderColor: 'black', // Borde blanco
-    borderRadius: 5,
-    marginBottom: 10,
-    width: '25%', // Hacer la barra desplegable más corta
-    textAlign: 'center',
-  },
-  pickerItem: {
-    color: 'white',
   },
   button: {
     backgroundColor: '#640000',
