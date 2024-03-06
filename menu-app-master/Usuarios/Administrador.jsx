@@ -5,10 +5,8 @@ import Clientes from '../pages/Clientes';
 import Inicio  from "../pages/Inicio";
 import Proveedores from '../pages/Proveedores';
 import Inventario from '../pages/Inventarios';
-import Login from '../pages/Login';
 import Empleado from '../pages/Empleado';
 import Productos from '../pages/Productos';
-
 
 const Menu = createDrawerNavigator();
 
@@ -21,7 +19,6 @@ export default function Administrador() {
           headerTitle: "INICIO",
         }}
         component={Inicio}
-        styles={{backgroundColor: '#440000', color:  "#440000"}}
       />
       <Menu.Screen name="BODEGA" component={Bodega} />
       <Menu.Screen name="CLIENTE" component={Clientes} />
