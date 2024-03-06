@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, Pressable, StyleSheet, Image } from 'react-native';
 
-
 const Login = ({ navigation }) => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -33,7 +32,10 @@ const Login = ({ navigation }) => {
   return (
     <View style={styles.container}>
       <View style={styles.card}>
-        <Image source={require('../assets/logoempresa.png')} style={styles.logo} />
+        {/* Center the logo horizontally */}
+        <View style={styles.logoContainer}>
+          <Image source={require('../assets/logoempresa.png')} style={styles.logo} />
+        </View>
         <Text style={styles.title}>BIENVENIDO</Text>
         <View style={styles.form}>
           <Text style={styles.label}>Usuario</Text>
@@ -54,10 +56,7 @@ const Login = ({ navigation }) => {
             />
           </View>
         </View>
-        <Pressable
-          style={styles.button}
-          onPress={handleLogin}
-        >
+        <Pressable style={styles.button} onPress={handleLogin}>
           <Text style={styles.buttonText}>Ingresar</Text>
         </Pressable>
       </View>
@@ -76,9 +75,7 @@ const styles = StyleSheet.create({
     width: 95,
     height: 95,
     marginBottom: 10,
-    top: 2,
-    left: 117,
-    borderRadius: 60
+    borderRadius: 60,
   },
   card: {
     width: '80%',
@@ -126,6 +123,11 @@ const styles = StyleSheet.create({
     color: 'white',
     textAlign: 'center',
     fontSize: 16,
+  },
+  // New style for centering the logo
+  logoContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
 

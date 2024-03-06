@@ -9,11 +9,12 @@ function Home() {
     >
       <View style={styles.container}>
         <Text style={styles.title}>CAWLEY</Text>
+        <Text style={styles.parrafo}>Bienvenido a nuestro sistema</Text>
         <TouchableOpacity 
           onPress={() => window.location.href = '/inicio'} // Redireccionar al hacer clic
           style={styles.button}
         >
-          <Text style={styles.buttonText}>Cerrar Sesion</Text>
+          <Text style={styles.buttonText}>Cerrar sesión</Text>
         </TouchableOpacity>
       </View>
     </ImageBackground>
@@ -35,13 +36,21 @@ const styles = StyleSheet.create({
   },
   title: {
     textAlign: 'center',
-    marginTop: 1,
+    marginTop: 300,
     marginBottom: 390,
-    color: 'white',
+    color: '#4c0101',
     fontSize: 50,
   },
+  parrafo: {
+    textAlign: 'center',
+    marginTop: 80,
+    marginBottom: 390,
+    color: '#4c0101',
+    fontSize: 50,
+    fontFamily: 'Arial',
+  },
   button: {
-    backgroundColor: 'white',
+    backgroundColor: '#4c0101',
     paddingVertical: 10,
     paddingHorizontal: 30,
     borderRadius: 15,
@@ -49,7 +58,7 @@ const styles = StyleSheet.create({
     position: 'relative'
   },
   buttonText: {
-    color: 'black',
+    color: 'white',
     fontSize: 20,
   },
 });
