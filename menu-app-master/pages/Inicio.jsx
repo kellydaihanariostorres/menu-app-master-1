@@ -41,6 +41,7 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 80,
     fontFamily: 'Arial black',
+    position: 'absolute'
   },
   parrafo: {
     textAlign: 'center',
@@ -49,6 +50,7 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 50,
     fontFamily: 'Arial black',
+    position: 'relative'
   },
   button: {
     backgroundColor: '#4c0101',
