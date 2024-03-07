@@ -4,7 +4,7 @@ import { View, Text, StyleSheet, TouchableOpacity, ImageBackground } from "react
 function Home() {
   return (
     <ImageBackground
-      source={require('../assets/prueba1.jpg')}
+      source={require('../assets/laquees.avif')}
       style={styles.background}
     >
       <View style={styles.container}>
@@ -36,18 +36,19 @@ const styles = StyleSheet.create({
   },
   title: {
     textAlign: 'center',
-    marginTop: 300,
-    marginBottom: 390,
-    color: '#4c0101',
-    fontSize: 50,
+    marginTop: 350,
+    marginBottom: 300,
+    color: 'white',
+    fontSize: 80,
+    fontFamily: 'Arial black',
   },
   parrafo: {
     textAlign: 'center',
-    marginTop: 80,
+    marginTop: 75,
     marginBottom: 390,
-    color: '#4c0101',
+    color: 'white',
     fontSize: 50,
-    fontFamily: 'Arial',
+    fontFamily: 'Arial black',
   },
   button: {
     backgroundColor: '#4c0101',
@@ -55,7 +56,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 30,
     borderRadius: 15,
     bottom: 20,
-    position: 'relative'
+    position: 'relative',
+    left: 550,
   },
   buttonText: {
     color: 'white',

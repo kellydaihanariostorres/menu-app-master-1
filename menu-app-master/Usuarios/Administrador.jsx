@@ -14,36 +14,30 @@ const Menu = createDrawerNavigator();
 export default function Administrador() {
   return (
     <Menu.Navigator
-      screenOptions={{
-        drawerActiveBackgroundColor: '#660000',
-        drawerActiveTintColor: 'white',
-      }}
-    >
-      <Menu.Screen
-        name="INICIO"
-        options={{
-          headerTitle: "INICIO",
+        screenOptions={{
+          drawerActiveBackgroundColor: '#660000',
+          drawerActiveTintColor: 'white',
+          drawerInactiveTintColor: 'white',
+          drawerStyle: {
+            backgroundColor: 'black',
+            width: 240,
+            
+          },
         }}
-        component={Inicio}
-      />
-      <Menu.Screen
-        name="BODEGAS"
-        component={Bodega}
-        options={{
-          labelStyle: { color: 'white' }, // BODEGAS en blanco
-        }}
-      />
-      <Menu.Screen
-        name="INVENTARIOS"
-        component={Inventario}
-        options={{
-          labelStyle: { color: 'white' }, // INVENTARIOS en blanco
-        }}
-      />
-      <Menu.Screen name="CLIENTES" component={Clientes} />
-      <Menu.Screen name="PROVEEDORES" component={Proveedores} />
-      <Menu.Screen name="EMPLEADOS" component={Empleado} />
-      <Menu.Screen name="PRODUCTOS" component={Productos} />
+      >
+        <Menu.Screen
+          name="INICIO"
+          options={{
+            headerTitle: "INICIO",
+          }}
+          component={Inicio}
+        />
+        <Menu.Screen name="CLIENTES" component={Clientes}  />
+        <Menu.Screen name="BODEGAS" component={Bodega} />
+        <Menu.Screen name="PROVEEDORES" component={Proveedores} />
+        <Menu.Screen name="EMPLEADOS" component={Empleado} />
+        <Menu.Screen name="PRODUCTOS" component={Productos} />
+        <Menu.Screen name="INVENTARIOS" component={Inventario} />
     </Menu.Navigator>
   );
 }
