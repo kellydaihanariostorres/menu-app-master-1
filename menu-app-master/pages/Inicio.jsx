@@ -1,15 +1,17 @@
 import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity, ImageBackground } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, ImageBackground, Dimensions } from "react-native";
+
+const { width } = Dimensions.get('window');
 
 function Home() {
   return (
     <ImageBackground
-      source={require('../assets/laquees.avif')}
+      source={require('../assets/fondo-acuarela.avif')}
       style={styles.background}
     >
       <View style={styles.container}>
-        <Text style={styles.title}>CAWLEY</Text>
-        <Text style={styles.parrafo}>Bienvenido a nuestro sistema</Text>
+        <Text style={styles.title}>Bienvenido a nuestro sistema de licores.</Text>
+        <Text style={styles.parrafo}>CAWLEY</Text>
         <TouchableOpacity 
           onPress={() => window.location.href = '/inicio'} // Redireccionar al hacer clic
           style={styles.button}
@@ -23,7 +25,7 @@ function Home() {
 
 const styles = StyleSheet.create({
   background: {
-    flex: 20,
+    flex: 1,
     resizeMode: "cover",
     justifyContent: "center",
     alignItems: 'center',
@@ -36,30 +38,24 @@ const styles = StyleSheet.create({
   },
   title: {
     textAlign: 'center',
-    marginTop: 350,
-    marginBottom: 300,
-    color: 'white',
-    fontSize: 80,
+    color: '#868585',
+    fontSize: 28,
     fontFamily: 'Arial black',
-    position: 'absolute'
   },
   parrafo: {
     textAlign: 'center',
-    marginTop: 75,
-    marginBottom: 390,
-    color: 'white',
-    fontSize: 50,
+    color: '#6E6D6D',
+    fontSize: 45,
     fontFamily: 'Arial black',
-    position: 'relative'
   },
   button: {
-    backgroundColor: '#4c0101',
+    backgroundColor: '#000000',
     paddingVertical: 10,
     paddingHorizontal: 30,
-    borderRadius: 15,
-    bottom: 20,
-    position: 'relative',
-    left: 550,
+    borderRadius: 40,
+    marginTop: 20,
+    borderColor: '#4F4D4D',
+    borderWidth: 1, // Grosor del borde
   },
   buttonText: {
     color: 'white',
@@ -68,4 +64,3 @@ const styles = StyleSheet.create({
 });
 
 export default Home;
-

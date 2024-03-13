@@ -26,12 +26,19 @@ export default function Administrador() {
         }}
       >
         <Menu.Screen
-          name="INICIO"
-          options={{
-            headerTitle: "INICIO",
-          }}
-          component={Inicio}
-        />
+        name="INICIO"
+        component={Inicio}
+        options={{
+          title: 'INICIO',
+          headerStyle: {
+            backgroundColor: 'black', // Cambia el color de fondo del encabezado
+          },
+          headerTintColor: 'white', // Cambia el color del texto del encabezado
+          headerTitleStyle: {
+            fontWeight: 'bold', // Opciones de estilo del texto del encabezado
+          },
+      }}
+    />
         <Menu.Screen name="CLIENTES" component={Clientes}  />
         <Menu.Screen name="BODEGAS" component={Bodega} />
         <Menu.Screen name="PROVEEDORES" component={Proveedores} />
