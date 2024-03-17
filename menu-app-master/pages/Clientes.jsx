@@ -83,7 +83,8 @@ export default class Cliente extends React.Component {
       
       // Si no está en modo de edición, actualiza la lista
       if (!isEditing) {
-        this.getClientes();
+        // Agregar una nueva línea para actualizar la lista después de agregar un nuevo cliente
+        await this.getClientes();
       }
       
       // Limpia el estado y cierra el modal
@@ -92,6 +93,7 @@ export default class Cliente extends React.Component {
       console.error('Error saving cliente:', error);
     }
   };
+  
   
 
   render() {

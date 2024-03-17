@@ -39,6 +39,7 @@ export default function Administrador() {
           },
       }}
     />
+    
         <Menu.Screen name="CLIENTES" component={Clientes}  />
         <Menu.Screen name="BODEGAS" component={Bodega} />
         <Menu.Screen name="PROVEEDORES" component={Proveedores} />
