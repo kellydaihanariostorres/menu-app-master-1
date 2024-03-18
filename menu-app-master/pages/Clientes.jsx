@@ -60,7 +60,8 @@ export default class Cliente extends React.Component {
       correo: cliente.correo,
       editingClienteId: clienteId,
       modalVisible: true,
-      isEditing: true, // Establecer isEditing como true al entrar en modo de edición
+      isEditing: true,
+      filteredClientes: this.state.clientes, // Establecer filteredClientes con todos los clientes
     });
   };
   
@@ -108,16 +109,41 @@ export default class Cliente extends React.Component {
       const responseData = await response.json();
       console.log('Response:', responseData);
       
-      // Si no está en modo de edición, actualiza la lista
-      if (!isEditing) {
-        // Agregar una nueva línea para actualizar la lista después de agregar un nuevo cliente
+      if (isEditing) {
+        const index = this.state.clientes.findIndex(cliente => cliente.clienteId === editingClienteId);
+        const updatedClientes = [...this.state.clientes];
+        updatedClientes[index] = responseData;
+        this.setState({ clientes: updatedClientes });
+      } else {
         await this.getClientes();
       }
-      
-      // Limpia el estado y cierra el modal
-      this.setState({ modalVisible: false, nombre: '', apellido: '', edad: '', tipoDocumento: '', numDocumento: '', correo: '', editingClienteId: null, isEditing: false }); // Establecer isEditing como false al guardar
+      // Actualizar filteredClientes con los clientes actualizados
+      this.setState(prevState => ({
+        modalVisible: false,
+        nombre: '',
+        apellido: '',
+        edad: '',
+        tipoDocumento: '',
+        numDocumento: '',
+        correo: '',
+        editingClienteId: null,
+        isEditing: false,
+        filteredClientes: prevState.clientes, // Actualizar filteredClientes con los clientes actualizados
+      }));
     } catch (error) {
       console.error('Error saving cliente:', error);
+    }
+  };
+
+  handleDelete = async clienteId => {
+    try {
+      await fetch(`https://localhost:7284/api/clientes/${clienteId}`, {
+        method: 'DELETE',
+      });
+      const updatedClientes = this.state.clientes.filter(cliente => cliente.clienteId !== clienteId);
+      this.setState({ clientes: updatedClientes });
+    } catch (error) {
+      console.error('Error deleting cliente:', error);
     }
   };
   
