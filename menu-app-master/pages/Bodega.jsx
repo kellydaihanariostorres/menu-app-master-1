@@ -159,14 +159,51 @@ export default class Bodega extends React.Component {
             onChangeText={this.handleSearch}
           />
         </View>
-        <View style={styles.row}>
-          <Text style={[styles.tableHeader, { backgroundColor: '#440000' }]}>#</Text>
-          <Text style={[styles.tableHeader, { backgroundColor: '#440000' }]}>BODEGA</Text>
-          <Text style={[styles.tableHeader, { backgroundColor: '#440000' }]}>ESTADO</Text>
-          <Text style={[styles.tableHeader, { backgroundColor: '#440000' }]}>DIRECCIÓN</Text>
-          <Text style={[styles.tableHeader, { backgroundColor: '#440000' }]}>CIUDAD</Text>
-          <View style={[styles.tableHeader, { backgroundColor: '#440000' }]}></View>
-        </View>
+          <View>
+            <View style={styles.row}>
+              <Text style={[styles.tableHeader, { backgroundColor: '#440000' }]}>#</Text>
+              <Text style={[styles.tableHeader, { backgroundColor: '#440000' }]}>BODEGA</Text>
+              <Text style={[styles.tableHeader, { backgroundColor: '#440000' }]}>ESTADO</Text>
+              <Text style={[styles.tableHeader, { backgroundColor: '#440000' }]}>DIRECCIÓN</Text>
+              <Text style={[styles.tableHeader, { backgroundColor: '#440000' }]}>CIUDAD</Text>
+              <View style={[styles.tableHeader, { backgroundColor: '#440000' }]}></View>
+            </View>
+            <View style={styles.row}>
+              <Text style={[styles.tableHeader, { flex: 1,backgroundColor: '#A9A9A9', color: 'black' }]}>1</Text>
+              <Text style={[styles.tableHeader, { flex: 1,backgroundColor: '#A9A9A9', color: 'black' }]}>DIABLO</Text>
+              <Text style={[styles.tableHeader, { flex: 1,backgroundColor: '#A9A9A9', color: 'black' }]}>ACTIVO</Text>
+              <Text style={[styles.tableHeader, { flex: 1.,backgroundColor: '#A9A9A9', color: 'black' }]}>CRA 87 B SUR</Text>
+              <Text style={[styles.tableHeader, { flex: 1.6,backgroundColor: '#A9A9A9', color: 'black' }]}>MEDELLIN</Text>
+              <View style={[styles.tableHeader, { flex: 0,backgroundColor: '#A9A9A9', color: 'black' }]}></View>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                <TouchableOpacity
+                    onPress={() => this.setState({ modalVisible: true })}
+                    style={{
+                        backgroundColor: '#440000',
+                        padding: 5,
+                        borderRadius: 15,
+                        marginBottom: 10,
+                        marginRight: 15,
+                    }}
+                  >
+                    <Text style={{ color: 'white', fontSize: 20 }}>🖊️</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                    onPress={() => this.setState({ modalVisible: true })}
+                    style={{
+                        backgroundColor: '#440000',
+                        padding: 5,
+                        borderRadius: 15,
+                        marginBottom: 10,
+                        marginRight: 10,
+                    }}
+                  >
+                    <Text style={{ color: 'white', fontSize: 20 }}>🗑️</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+            
+          </View>
         <FlatList
           contentContainerStyle={styles.tableGroupDivider}
           data={this.state.filteredBodegas}
