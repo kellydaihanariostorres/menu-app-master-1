@@ -122,8 +122,7 @@ export default class Proveedores extends React.Component {
             onChangeText={this.handleSearch}
           />
         </View>
-        
-        <View>
+          <View>
             <View style={styles.row}>
               <Text style={[styles.tableHeader, { flex: 0.5, backgroundColor: '#440000' }]}>#</Text>
               <Text style={[styles.tableHeader, { flex: 1, backgroundColor: '#440000' }]}>NOMBRE</Text>
@@ -134,6 +133,45 @@ export default class Proveedores extends React.Component {
               <Text style={[styles.tableHeader, { flex: 2, backgroundColor: '#440000' }]}>ENTIDAD BANCARIA</Text>
               <Text style={[styles.tableHeader, { flex: 2, backgroundColor: '#440000' }]}>NÚM. CUENTA BANCARIA</Text>
               <View style={[styles.tableHeader, { flex: 1, backgroundColor: '#440000' }]}></View>
+            </View>
+            <View style={styles.row}>
+              <Text style={[styles.tableHeader, { flex: -2, backgroundColor: '#A9A9A9', color: 'black' }]}>1</Text>
+              <Text style={[styles.tableHeader, { flex: 0.6, backgroundColor: '#A9A9A9', color: 'black' }]}>Andres</Text>
+              <Text style={[styles.tableHeader, { flex: -2.5, backgroundColor: '#A9A9A9', color: 'black' }]}>4578963</Text>
+              <Text style={[styles.tableHeader, { flex: 0.5, backgroundColor: '#A9A9A9' , color: 'black'}]}>25</Text>
+              <Text style={[styles.tableHeader, { flex: 0.5, backgroundColor: '#A9A9A9', color: 'black' }]}>3212546532</Text>
+              <Text style={[styles.tableHeader, { flex: 0.5, backgroundColor: '#A9A9A9', color: 'black' }]}>andres@gmail.com</Text>
+              <Text style={[styles.tableHeader, { flex: 0.5, backgroundColor: '#A9A9A9', color: 'black' }]}>Banco Bogota</Text>
+              <Text style={[styles.tableHeader, { flex: 0.5, backgroundColor: '#A9A9A9' , color: 'black'}]}>035469827</Text>
+              <View style={[styles.tableHeader, { flex: 0, backgroundColor: '#A9A9A9', color: 'black' }]}> 
+                
+            </View>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                <TouchableOpacity
+                    onPress={() => this.setState({ modalVisible: true })}
+                    style={{
+                        backgroundColor: '#440000',
+                        padding: 5,
+                        borderRadius: 15,
+                        marginBottom: 10,
+                        marginRight: 20,
+                    }}
+                  >
+                    <Text style={{ color: 'white', fontSize: 20 }}>🖊️</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                    onPress={() => this.setState({ modalVisible: true })}
+                    style={{
+                        backgroundColor: '#440000',
+                        padding: 5,
+                        borderRadius: 15,
+                        marginBottom: 10,
+                        marginRight: 15,
+                    }}
+                  >
+                    <Text style={{ color: 'white', fontSize: 20 }}>🗑️</Text>
+                </TouchableOpacity>
+              </View>
             </View>
             <FlatList
               contentContainerStyle={styles.tableGroupDivider}
