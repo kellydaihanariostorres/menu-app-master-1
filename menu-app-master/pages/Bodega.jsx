@@ -61,19 +61,52 @@ export default class Bodega extends React.Component {
   handleDelete = async bodegaId => {
     try {
       await fetch(`https://localhost:7284/api/bodegas/${bodegaId}`, { method: 'DELETE' });
-      this.getBodegas();
+      // Eliminar la fila correspondiente de los datos de la bodega y de las bodegas filtradas
+      const updatedBodegas = this.state.bodegas.filter(bodega => bodega.bodegaId !== bodegaId);
+      const updatedFilteredBodegas = this.state.filteredBodegas.filter(bodega => bodega.bodegaId !== bodegaId);
+      this.setState({ bodegas: updatedBodegas, filteredBodegas: updatedFilteredBodegas });
     } catch (error) {
       console.error('Error deleting bodega:', error);
     }
   };
+  
 
   handleSave = async () => {
     const { nombre, direccion, estado, ciudad, editingBodegaId } = this.state;
-    const data = { nombre, direccion, estado, ciudad };
-    const url = editingBodegaId ? `https://localhost:7284/api/bodegas/${editingBodegaId}` : 'https://localhost:7284/api/bodegas';
+  
+    // Validación de nombre: solo letras
+    const nombreRegex = /^[A-Za-z\s]+$/;
+    if (!nombreRegex.test(nombre)) {
+      alert('Nombre inválido. Por favor, ingrese solo letras.');
+      return;
+    }
+    
+    // Validación de estado: solo 'Activo' o 'Inactivo'
+    if (estado !== 'Activo' && estado !== 'Inactivo') {
+      alert('Estado inválido. Por favor, ingrese "Activo" o "Inactivo".');
+      return;
+    }
+  
+    // Validación de ciudad: solo letras
+    const ciudadRegex = /^[A-Za-z\s]+$/;
+    if (!ciudadRegex.test(ciudad)) {
+      alert('Ciudad inválida. Por favor, ingrese solo letras.');
+      return;
+    }
 
+    // Una vez que todas las validaciones pasan, procedes a guardar los datos
+    const data = { nombre, direccion, estado, ciudad };
+  
     try {
-      const method = editingBodegaId ? 'PUT' : 'POST';
+      let url, method;
+      if (editingBodegaId) {
+        url = `https://localhost:7284/api/bodegas/${editingBodegaId}`;
+        method = 'PUT';
+      } else {
+        url = 'https://localhost:7284/api/bodegas';
+        method = 'POST';
+      }
+  
       const response = await fetch(url, {
         method,
         headers: {
@@ -81,14 +114,25 @@ export default class Bodega extends React.Component {
         },
         body: JSON.stringify(data),
       });
+  
       const responseData = await response.json();
       console.log('Response:', responseData);
-      this.getBodegas();
+  
+      // Si se está agregando una nueva bodega, actualizar el estado con la nueva bodega
+      if (!editingBodegaId) {
+        this.setState(prevState => ({
+          bodegas: [...prevState.bodegas, responseData], // Agregar la nueva bodega al estado
+          filteredBodegas: [...prevState.bodegas, responseData], // Agregar la nueva bodega a las bodegas filtradas
+        }));
+      }
+  
       this.setState({ modalVisible: false, nombre: '', direccion: '', estado: '', ciudad: '', editingBodegaId: null });
     } catch (error) {
       console.error('Error saving bodega:', error);
     }
   };
+  
+  
 
   render() {
     return (

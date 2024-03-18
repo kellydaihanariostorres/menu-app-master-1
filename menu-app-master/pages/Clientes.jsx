@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, Text, View, FlatList, TextInput, TouchableOpacity, Modal, ScrollView } from 'react-native';
+import { StyleSheet, Text, View, FlatList, TextInput, TouchableOpacity, Modal } from 'react-native';
 
 export default class Cliente extends React.Component {
   constructor(props) {
@@ -18,6 +18,7 @@ export default class Cliente extends React.Component {
       correo: '',
       editingClienteId: null,
       isEditing: false,
+      successMessage: '', // Nuevo estado para el mensaje de éxito
     };
   }
 
@@ -61,6 +62,7 @@ export default class Cliente extends React.Component {
       editingClienteId: clienteId,
       modalVisible: true,
       isEditing: true, // Establecer isEditing como true al entrar en modo de edición
+      successMessage: '', // Limpiar mensaje de éxito al editar
     });
   };
   
@@ -108,18 +110,43 @@ export default class Cliente extends React.Component {
       const responseData = await response.json();
       console.log('Response:', responseData);
       
-      // Si no está en modo de edición, actualiza la lista
       if (!isEditing) {
         // Agregar una nueva línea para actualizar la lista después de agregar un nuevo cliente
         await this.getClientes();
+        // Recargar la página para obtener los datos actualizados de la base de datos
+        this.forceUpdate();
       }
       
       // Limpia el estado y cierra el modal
-      this.setState({ modalVisible: false, nombre: '', apellido: '', edad: '', tipoDocumento: '', numDocumento: '', correo: '', editingClienteId: null, isEditing: false }); // Establecer isEditing como false al guardar
+      this.setState({ 
+        modalVisible: false, 
+        nombre: '', 
+        apellido: '', 
+        edad: '', 
+        tipoDocumento: '', 
+        numDocumento: '', 
+        correo: '', 
+        editingClienteId: null, 
+        isEditing: false, 
+        successMessage: isEditing ? 'Los cambios se guardaron correctamente.' : 'El cliente se agregó correctamente.', // Mensaje de éxito
+      });
     } catch (error) {
       console.error('Error saving cliente:', error);
     }
   };
+
+  handleDelete = async clienteId => {
+    try {
+      await fetch(`https://localhost:7284/api/clientes/${clienteId}`, { method: 'DELETE' });
+      // Eliminar la fila correspondiente de los datos del cliente y de los clientes filtrados
+      const updatedClientes = this.state.clientes.filter(cliente => cliente.clienteId !== clienteId);
+      const updatedFilteredClientes = this.state.filteredClientes.filter(cliente => cliente.clienteId !== clienteId);
+      this.setState({ clientes: updatedClientes, filteredClientes: updatedFilteredClientes });
+    } catch (error) {
+      console.error('Error deleting cliente:', error);
+    }
+  };
+  
   
   render() {
     return (
@@ -190,7 +217,18 @@ export default class Cliente extends React.Component {
         animationType="slide"
         onRequestClose={() => {
           // Limpia el estado y cierra el modal
-          this.setState({ modalVisible: false, nombre: '', apellido: '', edad: '', tipoDocumento: '', numDocumento: '', correo: '', editingClienteId: null, isEditing: false });
+          this.setState({ 
+            modalVisible: false, 
+            nombre: '', 
+            apellido: '', 
+            edad: '', 
+            tipoDocumento: '', 
+            numDocumento: '', 
+            correo: '', 
+            editingClienteId: null, 
+            isEditing: false, 
+            successMessage: '', // Limpiar mensaje de éxito al cerrar el modal
+          });
         }}
       >
         <View style={styles.modalContainer}>
@@ -230,12 +268,19 @@ export default class Cliente extends React.Component {
             onChangeText={correo => this.setState({ correo })}
             style={styles.input}
           />
-          <TouchableOpacity onPress={this.handleSave} style={styles.buttont}>
+          <TouchableOpacity onPress={this.handleSave} style={styles.button}>
             <Text style={styles.buttonText}>Guardar</Text>
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => this.setState({ modalVisible: false })} style={styles.buttont}>
+          <TouchableOpacity onPress={() => this.setState({ modalVisible: false })} style={styles.button}>
             <Text style={styles.buttonText}>Cerrar</Text>
           </TouchableOpacity>
+          
+          {/* Mostrar ventana emergente con el mensaje de éxito */}
+          {this.state.successMessage !== '' && (
+            <View style={styles.successMessageContainer}>
+              <Text style={styles.successMessageText}>{this.state.successMessage}</Text>
+            </View>
+          )}
         </View>
       </Modal>
 
@@ -282,10 +327,10 @@ const styles = StyleSheet.create({
     justifyContent: 'space-around',
   },
   button: {
-    padding: 5,
-    borderRadius: 5, // Ajuste: Cambiar a 5 para que sea ovalado
-    textAlign: 'center',
-    borderWidth: 1,
+    backgroundColor: '#440000',
+    padding: 10,
+    borderRadius: 5,
+    marginVertical: 5,
   },
   editButton: {
     backgroundColor: '#440000',
@@ -310,17 +355,21 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     paddingLeft: 10,
   },
-  buttont: {
-    backgroundColor: '#440000', // Color de fondo del botón
-    padding: 10, // Espaciado interno del botón
-    borderRadius: 50, // Bordes redondeados del botón
-    marginBottom: 10, // Espaciado inferior del botón
-    width: '40%', // Ancho del botón
-    alignItems: 'center', // Alinear contenido del botón al centro
-  },
   buttonText: {
-    color: 'white', // Color del texto del botón
-    fontWeight: 'bold', // Negrita del texto del botón
+    color: 'white',
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
+  successMessageContainer: {
+    backgroundColor: '#00FF00',
+    padding: 10,
+    marginVertical: 5,
+    borderRadius: 5,
+  },
+  successMessageText: {
+    color: 'white',
+    fontWeight: 'bold',
+    textAlign: 'center',
   },
   tableHeader: {
     flex: 1,
