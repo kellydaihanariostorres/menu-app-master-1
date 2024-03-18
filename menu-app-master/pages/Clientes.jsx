@@ -67,6 +67,33 @@ export default class Cliente extends React.Component {
   handleSave = async () => {
     const { nombre, apellido, edad, tipoDocumento, numDocumento, correo, editingClienteId, isEditing } = this.state;
     const data = { nombre, apellido, edad, tipoDocumento, numDocumento, correo };
+
+    // Validaciones de datos
+    if (!/^[a-zA-Z]+$/.test(nombre)) {
+      alert('El nombre solo puede contener letras.');
+      return;
+    }
+    if (!/^[a-zA-Z]+$/.test(apellido)) {
+      alert('El apellido solo puede contener letras.');
+      return;
+    }
+    if (tipoDocumento !== 'CC' && tipoDocumento !== 'CE') {
+      alert('El tipo de documento solo puede ser CC o CE.');
+      return;
+    }
+    if (!/^\d{7,10}$/.test(numDocumento)) {
+      alert('El número de documento debe contener entre 7 y 10 dígitos.');
+      return;
+    }
+    if (!/^\d+$/.test(edad) || parseInt(edad) < 18 || parseInt(edad) > 100) {
+      alert('La edad debe ser un número entero mayor o igual a 18 y menor a 100.');
+      return;
+    }
+    if (!correo.endsWith('@gmail.com')) {
+      alert('El correo debe terminar en @gmail.com.');
+      return;
+    }
+
     const url = editingClienteId ? `https://localhost:7284/api/clientes/${editingClienteId}` : 'https://localhost:7284/api/clientes';
   
     try {
@@ -94,8 +121,6 @@ export default class Cliente extends React.Component {
     }
   };
   
-  
-
   render() {
     return (
       <View style={styles.container}>
@@ -235,8 +260,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     flex: 1,
     paddingLeft: 10,
-    borderRadius: '10px',
-    color :'black',
+    borderRadius: 10,
+    color: 'black',
     backgroundColor: 'white',
     marginBottom: 10,
   },
