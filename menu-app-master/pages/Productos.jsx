@@ -69,6 +69,28 @@ export default class Productos extends React.Component {
 
   handleSave = async () => {
     const { nombreProducto, precioProducto, marcaProducto, clasificacionProducto, editingProductoId } = this.state;
+    
+    // Validaciones
+    if (!/^[A-Za-z\s]+$/.test(nombreProducto)) {
+      alert('Nombre debe contener solo letras y espacios');
+      return;
+    }
+
+    if (!/^\$?(\d{1,3}(\.\d{3})*(\,\d{1,2})?)+$/.test(precioProducto)) {
+      alert('Precio debe estar en formato de precio ($)');
+      return;
+    }
+
+    if (!/^[A-Za-z\s]+$/.test(marcaProducto)) {
+      alert('Marca debe contener solo letras y espacios');
+      return;
+    }
+
+    if (!/^[A-Za-z\s]+$/.test(clasificacionProducto)) {
+      alert('Clasificación debe contener solo letras y espacios');
+      return;
+    }
+
     const data = { nombreProducto, precioProducto, marcaProducto, clasificacionProducto };
     const url = editingProductoId ? `https://localhost:7284/api/productos/${editingProductoId}` : 'https://localhost:7284/api/productos';
 

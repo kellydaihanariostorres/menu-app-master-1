@@ -1,8 +1,8 @@
 import React from 'react';
 import { createDrawerNavigator } from "@react-navigation/drawer";
-import Bodega  from '../pages/Bodega';
-import Clientes from '../pages/Clientes';
-import Inicio  from "../pages/Inicio";
+import Bodega  from '../../pages/Bodega';
+import Clientes from '../../pages/Clientes';
+import Inicio  from "../../pages/Inicio";
 
 const Menu = createDrawerNavigator();
 

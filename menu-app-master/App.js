@@ -2,9 +2,9 @@ import React from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import IniciarSesion from './pages/Login';
-import Administrador from './Usuarios/Administrador';
-import Caja from './Usuarios/Caja';
-import Bodega from './Usuarios/Bodega';
+import Administrador from './Usuarios/Administrador/Administrador';
+import Caja from './Usuarios/Caja/Caja';
+import Bodega from './Usuarios/Bodega/Bodega';
 import Contador from './Usuarios/Contador';
 
 const Stack = createNativeStackNavigator();
@@ -38,6 +38,7 @@ const App = () => {
           component={Bodega}
           options={{ headerShown: false, title: "Bodega" }}
         />
+
       </Stack.Navigator>
     </NavigationContainer>
   );

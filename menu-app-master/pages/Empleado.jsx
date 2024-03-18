@@ -97,6 +97,38 @@ export default class Empleado extends React.Component {
       console.error('Error saving empleado:', error);
     }
   };
+  handleAdd = async () => {
+    const { nombre, apellido, documento, cargo, fechaInicio, fechaFin, sueldo, bodegaId } = this.state;
+    const data = { nombre, apellido, documento, cargo, fechaInicio, fechaFin, sueldo, bodegaId };
+  
+    try {
+      const response = await fetch('https://localhost:7284/api/empleados', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+      const responseData = await response.json();
+      console.log('Response:', responseData);
+      this.getEmpleados(); // Actualizar la lista de empleados después de agregar uno nuevo
+      this.setState({
+        modalVisible: false,
+        nombre: '',
+        apellido: '',
+        documento: '',
+        cargo: '',
+        fechaInicio: '',
+        fechaFin: '',
+        sueldo: '',
+        bodegaId: '',
+        editingEmpleadoId: null,
+      });
+    } catch (error) {
+      console.error('Error adding empleado:', error);
+    }
+  };
+  
 
   render() {
     return (
@@ -223,8 +255,8 @@ export default class Empleado extends React.Component {
             <TouchableOpacity onPress={this.handleSave} style={styles.buttont}>
               <Text style={styles.buttonText}>Guardar</Text>
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => this.setState({ modalVisible: false })} style={styles.buttont}>
-              <Text style={styles.buttonText}>Cerrar</Text>
+            <TouchableOpacity onPress={this.handleAdd} style={styles.buttont}>
+              <Text style={styles.buttonText}>Agregar Empleado</Text>
             </TouchableOpacity>
           </View>
         </Modal>
