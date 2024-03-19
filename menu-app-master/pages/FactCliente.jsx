@@ -186,44 +186,6 @@ export default class Cliente extends React.Component {
               <Text style={[styles.tableHeader, { flex: 2, backgroundColor: '#440000' }]}>CORREO</Text>
               <View style={[styles.tableHeader, { flex: 1, backgroundColor: '#440000' }]}></View>
             </View>
-            <View style={styles.row}>
-              <Text style={[styles.tableHeader, { flex: 0.5, backgroundColor: '#A9A9A9', color: 'black' }]}>1</Text>
-              <Text style={[styles.tableHeader, { flex: 1, backgroundColor: '#A9A9A9', color: 'black' }]}>Juan</Text>
-              <Text style={[styles.tableHeader, { flex: 1, backgroundColor: '#A9A9A9', color: 'black' }]}>Perez</Text>
-              <Text style={[styles.tableHeader, { flex: 0.5, backgroundColor: '#A9A9A9' , color: 'black'}]}>30</Text>
-              <Text style={[styles.tableHeader, { flex: 1, backgroundColor: '#A9A9A9', color: 'black' }]}>DNI</Text>
-              <Text style={[styles.tableHeader, { flex: 2.5, backgroundColor: '#A9A9A9', color: 'black' }]}>12345678</Text>
-              <Text style={[styles.tableHeader, { flex: 0, backgroundColor: '#A9A9A9' , color: 'black'}]}>juan@example.com</Text>
-              <View style={[styles.tableHeader, { flex: 1, backgroundColor: '#A9A9A9', color: 'black' }]}> 
-                
-            </View>
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                <TouchableOpacity
-                    onPress={() => this.setState({ modalVisible: true })}
-                    style={{
-                        backgroundColor: '#440000',
-                        padding: 5,
-                        borderRadius: 15,
-                        marginBottom: 10,
-                        marginRight: 20,
-                    }}
-                  >
-                    <Text style={{ color: 'white', fontSize: 20 }}>🖊️</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                    onPress={() => this.setState({ modalVisible: true })}
-                    style={{
-                        backgroundColor: '#440000',
-                        padding: 5,
-                        borderRadius: 15,
-                        marginBottom: 10,
-                        marginRight: 15,
-                    }}
-                  >
-                    <Text style={{ color: 'white', fontSize: 20 }}>🗑️</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
             <FlatList
               contentContainerStyle={styles.tableGroupDivider}
               data={this.state.filteredClientes}
