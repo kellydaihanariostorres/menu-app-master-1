@@ -18,7 +18,6 @@ export default class Cliente extends React.Component {
       correo: '',
       editingClienteId: null,
       isEditing: false,
-      successMessage: '', // Nuevo estado para el mensaje de éxito
     };
   }
 
@@ -61,8 +60,7 @@ export default class Cliente extends React.Component {
       correo: cliente.correo,
       editingClienteId: clienteId,
       modalVisible: true,
-      isEditing: true, // Establecer isEditing como true al entrar en modo de edición
-      successMessage: '', // Limpiar mensaje de éxito al editar
+      isEditing: true, // Establecer isEditing como true al entrar en modo de edició
     });
   };
   
@@ -128,7 +126,6 @@ export default class Cliente extends React.Component {
         correo: '', 
         editingClienteId: null, 
         isEditing: false, 
-        successMessage: isEditing ? 'Los cambios se guardaron correctamente.' : 'El cliente se agregó correctamente.', // Mensaje de éxito
       });
     } catch (error) {
       console.error('Error saving cliente:', error);
@@ -152,112 +149,133 @@ export default class Cliente extends React.Component {
   render() {
     return (
       <View style={styles.container}>
-        <View style={[styles.buttonContainer, { flexDirection: 'row', marginLeft: 300   }]}>
+        <View style={styles.buttonContainer}>
           <TouchableOpacity
             onPress={() => this.setState({ modalVisible: true })}
             style={{
               backgroundColor: '#440000',
               padding: 10,
               borderRadius: 50,
-              marginBottom: 5,
-              width: 150,
-              marginRight: 10,
-              marginTop: 20,
+              marginBottom: 10,
             }}
           >
-            <Text style={{ color: 'white', textAlign: 'center' }}>Registrar Cliente</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => this.setState({ modalVisible: true })}
-            style={{
-              backgroundColor: '#440000',
-              padding: 10,
-              borderRadius: 50,
-              marginBottom: 5,
-              width: 150,
-              marginTop: 20,
-            }}
-          >
-            <Text style={{ color: 'white', textAlign: 'center' }}>Buscar Cliente</Text>
-          </TouchableOpacity>
+            <Text style={{ color: 'white' }}>Agregar</Text>
+          </TouchableOpacity> 
+
+          {/* Agregar un View para crear un espacio */}
+          <View style={{ width: 10 }} />
+
           <TextInput
-              style={styles.searchInput}
-              placeholder="Buscar Caja....."
-              onChangeText={this.handleSearch}
-            />
+            style={styles.searchInput}
+            placeholder="Buscar cliente"
+            onChangeText={this.handleSearch}
+          />
+          
         </View>
-        
-              <View style={styles.containerdos}>
-                <Text style={styles.headerItem }>Empresa: Diablo Amargo</Text>
-                <Text style={styles.headerItem}>Direccion: </Text>
-              </View>
-              <View style={styles.containertres}>
-                <Text style={styles.headerItem }>Fecha De Compra:</Text>
-                <Text style={styles.headerItem}>Id Cliente: </Text>
-                <Text style={styles.headerItem}>Id Empleado: </Text>
-              </View>
-            
-            <View style={styles.containercuatro}>
-                <Text style={styles.headerItem }>ID:</Text>
-                <Text style={styles.headerItem }>Nombre:</Text>
-                <Text style={styles.headerItem }>Precio Unitario:</Text>
-                <Text style={styles.headerItem }>Cantidad:</Text>
-                
+          <View>
+            <View style={styles.row}>
+              <Text style={[styles.tableHeader, { flex: 0.5, backgroundColor: '#440000' }]}>#</Text>
+              <Text style={[styles.tableHeader, { flex: 1, backgroundColor: '#440000' }]}>NOMBRE</Text>
+              <Text style={[styles.tableHeader, { flex: 1, backgroundColor: '#440000' }]}>APELLIDO</Text>
+              <Text style={[styles.tableHeader, { flex: 0.5, backgroundColor: '#440000' }]}>EDAD</Text>
+              <Text style={[styles.tableHeader, { flex: 1.5, backgroundColor: '#440000' }]}>TIPO DE DOCUMENTO</Text>
+              <Text style={[styles.tableHeader, { flex: 1.5, backgroundColor: '#440000' }]}>NÚMERO DE DOCUMENTO</Text>
+              <Text style={[styles.tableHeader, { flex: 2, backgroundColor: '#440000' }]}>CORREO</Text>
+              <View style={[styles.tableHeader, { flex: 1, backgroundColor: '#440000' }]}></View>
             </View>
-            <View style={[styles.buttonContainerdos, { flexDirection: 'row', marginLeft: 300   }]}>
-          <TouchableOpacity
-            onPress={() => this.setState({ modalVisible: true })}
-            style={{
-              backgroundColor: '#440000',
-              padding: 10,
-              borderRadius: 50,
-              marginBottom: 5,
-              width: 150,
-              marginRight: 10,
-              marginTop: 20,
-            }}
-          >
-            <Text style={{ color: 'white', textAlign: 'center' }}>Confirmar</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => this.setState({ modalVisible: true })}
-            style={{
-              backgroundColor: '#440000',
-              padding: 10,
-              borderRadius: 50,
-              marginBottom: 5,
-              width: 150,
-              marginTop: 20,
-            }}
-          >
-            <Text style={{ color: 'white', textAlign: 'center' }}>Cancelar</Text>
-          </TouchableOpacity>
-          <View style={styles.box}>
-            <Text style={styles.text}>SubTotal:0</Text>
-          </View>
-          <View style={styles.boxuno}>
-            <Text style={styles.text}>IVA:0</Text>
-          </View>
-          <View style={styles.boxdos}>
-            <Text style={styles.text}>Total:0</Text>
-          </View>
-          <FlatList
+            <FlatList
               contentContainerStyle={styles.tableGroupDivider}
-              data={this.state.facturas}
+              data={this.state.filteredClientes}
               renderItem={({ item, index }) => (
-                <TouchableOpacity>
+                <TouchableOpacity onPress={() => this.handleEdit(item.clienteId)}>
                   <View style={styles.row}>
-                    <Text style={[styles.item, { flex: 1 }]}>{index + 1}</Text>
-                    <Text style={[styles.item, { flex: 2 }]}>{item.fechaCompra}</Text>
-                    <Text style={[styles.item, { flex: 1 }]}>{item.ivaCompra}</Text>
-                    <Text style={[styles.item, { flex: 1 }]}>{item.subtotal}</Text>
-                    <Text style={[styles.item, { flex: 1 }]}>{item.total}</Text>
+                    <Text style={[styles.item, { flex: 0.5 }]}>{index + 1}</Text>
+                    <Text style={[styles.item, { flex: 1 }]}>{item.nombre}</Text>
+                    <Text style={[styles.item, { flex: 1 }]}>{item.apellido}</Text>
+                    <Text style={[styles.item, { flex: 0.5 }]}>{item.edad}</Text>
+                    <Text style={[styles.item, { flex: 1.5 }]}>{item.tipoDocumento}</Text>
+                    <Text style={[styles.item, { flex: 1.5 }]}>{item.numDocumento}</Text>
+                    <Text style={[styles.item, { flex: 2 }]}>{item.correo}</Text>
+                    <View style={[styles.buttonGroup, { flex: 1 }]}>
+                      <TouchableOpacity onPress={() => this.handleEdit(item.clienteId)}>
+                        <Text style={[styles.button, styles.editButton]}>✎</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity onPress={() => this.handleDelete(item.clienteId)}>
+                        <Text style={[styles.button, styles.deleteButton]}>🗑</Text>
+                      </TouchableOpacity>
+                    </View>
                   </View>
                 </TouchableOpacity>
               )}
-              keyExtractor={item => item.id}
+              keyExtractor={item => item.clienteId}
             />
-          </View>
+        </View>
+
+      <Modal
+        visible={this.state.modalVisible}
+        animationType="slide"
+        onRequestClose={() => {
+          // Limpia el estado y cierra el modal
+          this.setState({ 
+            modalVisible: false, 
+            nombre: '', 
+            apellido: '', 
+            edad: '', 
+            tipoDocumento: '', 
+            numDocumento: '', 
+            correo: '', 
+            editingClienteId: null, 
+            isEditing: false, 
+            successMessage: '', // Limpiar mensaje de éxito al cerrar el modal
+          });
+        }}
+      >
+        <View style={styles.modalContainer}>
+          <TextInput
+            placeholder="Nombre"
+            value={this.state.nombre}
+            onChangeText={nombre => this.setState({ nombre })}
+            style={styles.input}
+          />
+          <TextInput
+            placeholder="Apellido"
+            value={this.state.apellido}
+            onChangeText={apellido => this.setState({ apellido })}
+            style={styles.input}
+          />
+          <TextInput
+            placeholder="Edad"
+            value={this.state.edad}
+            onChangeText={edad => this.setState({ edad })}
+            style={styles.input}
+          />
+          <TextInput
+            placeholder="Tipo de Documento"
+            value={this.state.tipoDocumento}
+            onChangeText={tipoDocumento => this.setState({ tipoDocumento })}
+            style={styles.input}
+          />
+          <TextInput
+            placeholder="Número de Documento"
+            value={this.state.numDocumento}
+            onChangeText={numDocumento => this.setState({ numDocumento })}
+            style={styles.input}
+          />
+          <TextInput
+            placeholder="Correo"
+            value={this.state.correo}
+            onChangeText={correo => this.setState({ correo })}
+            style={styles.input}
+          />
+          <TouchableOpacity onPress={this.handleSave} style={styles.button}>
+            <Text style={styles.buttonText}>Guardar</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => this.setState({ modalVisible: false })} style={styles.button}>
+            <Text style={styles.buttonText}>Cerrar</Text>
+          </TouchableOpacity>
+        </View>
+      </Modal>
+
       </View>
     );
   }
@@ -310,6 +328,17 @@ const styles = StyleSheet.create({
     backgroundColor: '#440000',
     color: 'white',
   },
+  deleteButton: {
+    backgroundColor: '#440000',
+    color: 'white',
+  },
+  modalContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'white',
+    padding: 20,
+  },
   input: {
     height: 40,
     width: '80%',
@@ -323,101 +352,13 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     textAlign: 'center',
   },
-  successMessageContainer: {
-    backgroundColor: '#00FF00',
-    padding: 10,
-    marginVertical: 5,
-    borderRadius: 5,
-  },
-  successMessageText: {
-    color: 'white',
-    fontWeight: 'bold',
+  tableHeader: {
+    flex: 1,
     textAlign: 'center',
+    color: 'white',
+    paddingVertical: 5,
   },
-  buttonContainer: {
-    row: 'space',
-},
-
-
-searchInput: {
-    height: 40,
-    borderColor: '#440000',
-    borderWidth: 1,
-    flex: 1,
-    paddingLeft: 10,
-    borderRadius: '10px',
-    color :'black',
-    backgroundColor: 'white',
-    marginBottom: 10,
-    marginTop: 20,
-    marginLeft: 3.5,
-    marginRight: 300,
-    borderRadius: 30
+  tableGroupDivider: {
+    backgroundColor: '#dcdcdc',
   },
-
-
-
-containerdos: {
-    flex: 1,
-    backgroundColor: 'white',
-    marginLeft: 300,
-    marginRight: 300,
-    marginTop: 3,
-    margin:'30px'
-  },
-  containertres: {
-    flex: 1,
-    marginLeft: 300,
-    marginRight: 300,
-    marginTop: -28,
-    backgroundColor: 'white',
-    margin:'40px'
-  },
-  containercuatro: {
-    flex: 1,
-    marginLeft: 300,
-    marginRight: 300,
-    marginTop: -38.5,
-    display: 'flex',
-    flexDirection: 'row',
-    columnGap: '150px',
-    backgroundColor: 'white',
-    margin:'30px'
-  },
-
-
-
-
-buttonContainerdos:{
-    row: 'space',
-    marginTop: -34,
-  },
-
-
-
-
-box: {
-    marginTop: 25,
-    borderColor: 'black',
-    padding: 1,
-    marginLeft: 100,
-    marginRight: -35,
-  
-
-  },
-  boxdos: {
-    marginTop: 25,
-    borderColor: 'black',
-    padding: 1,
-    marginLeft: 100,
-    marginRight: -55,
-  },
-  boxuno: {
-    marginTop: 25,
-    borderColor: 'black',
-    padding: 1,
-    marginLeft: 100,
-    marginRight: -54,
-  },
-
 });

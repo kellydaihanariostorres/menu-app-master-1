@@ -12,11 +12,11 @@ const Stack = createNativeStackNavigator();
 const App = () => {
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName="Iniciar sesión">
+      <Stack.Navigator initialRouteName="Iniciarsesión">
         <Stack.Screen
           name="Iniciar sesión"
           component={IniciarSesion}
-          options={{ headerShown: false, title: "Iniciar sesión" }}
+          options={{ headerShown: false, title: "Iniciarsesión" }}
         />
         <Stack.Screen
           name="Administrador"

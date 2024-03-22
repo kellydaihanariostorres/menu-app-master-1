@@ -18,7 +18,6 @@ export default class Cliente extends React.Component {
       correo: '',
       editingClienteId: null,
       isEditing: false,
-      successMessage: '', // Nuevo estado para el mensaje de éxito
     };
   }
 
@@ -62,7 +61,6 @@ export default class Cliente extends React.Component {
       editingClienteId: clienteId,
       modalVisible: true,
       isEditing: true, // Establecer isEditing como true al entrar en modo de edición
-      successMessage: '', // Limpiar mensaje de éxito al editar
     });
   };
   
@@ -113,6 +111,7 @@ export default class Cliente extends React.Component {
       if (!isEditing) {
         // Agregar una nueva línea para actualizar la lista después de agregar un nuevo cliente
         await this.getClientes();
+      
         // Recargar la página para obtener los datos actualizados de la base de datos
         this.forceUpdate();
       }
@@ -128,7 +127,6 @@ export default class Cliente extends React.Component {
         correo: '', 
         editingClienteId: null, 
         isEditing: false, 
-        successMessage: isEditing ? 'Los cambios se guardaron correctamente.' : 'El cliente se agregó correctamente.', // Mensaje de éxito
       });
     } catch (error) {
       console.error('Error saving cliente:', error);
@@ -229,7 +227,6 @@ export default class Cliente extends React.Component {
             correo: '', 
             editingClienteId: null, 
             isEditing: false, 
-            successMessage: '', // Limpiar mensaje de éxito al cerrar el modal
           });
         }}
       >
@@ -276,13 +273,6 @@ export default class Cliente extends React.Component {
           <TouchableOpacity onPress={() => this.setState({ modalVisible: false })} style={styles.button}>
             <Text style={styles.buttonText}>Cerrar</Text>
           </TouchableOpacity>
-          
-          {/* Mostrar ventana emergente con el mensaje de éxito */}
-          {this.state.successMessage !== '' && (
-            <View style={styles.successMessageContainer}>
-              <Text style={styles.successMessageText}>{this.state.successMessage}</Text>
-            </View>
-          )}
         </View>
       </Modal>
 
@@ -331,8 +321,8 @@ const styles = StyleSheet.create({
   button: {
     backgroundColor: '#440000',
     padding: 10,
-    borderRadius: 5,
-    marginVertical: 5,
+    borderRadius: 40,
+    marginVertical: 30,
   },
   editButton: {
     backgroundColor: '#440000',
@@ -362,17 +352,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     textAlign: 'center',
   },
-  successMessageContainer: {
-    backgroundColor: '#00FF00',
-    padding: 10,
-    marginVertical: 5,
-    borderRadius: 5,
-  },
-  successMessageText: {
-    color: 'white',
-    fontWeight: 'bold',
-    textAlign: 'center',
-  },
   tableHeader: {
     flex: 1,
     textAlign: 'center',
@@ -383,3 +362,4 @@ const styles = StyleSheet.create({
     backgroundColor: '#dcdcdc',
   },
 });
+

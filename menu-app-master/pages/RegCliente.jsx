@@ -3,7 +3,7 @@ import { StyleSheet, Text, View, FlatList, TextInput, TouchableOpacity, Modal } 
 
 export default class Cliente extends React.Component {
   constructor(props) {
-    super(props);
+    super(props);   
 
     this.state = {
       loading: false,
@@ -18,7 +18,6 @@ export default class Cliente extends React.Component {
       correo: '',
       editingClienteId: null,
       isEditing: false,
-      successMessage: '', // Nuevo estado para el mensaje de éxito
     };
   }
 
@@ -61,15 +60,14 @@ export default class Cliente extends React.Component {
       correo: cliente.correo,
       editingClienteId: clienteId,
       modalVisible: true,
-      isEditing: true, // Establecer isEditing como true al entrar en modo de edición
-      successMessage: '', // Limpiar mensaje de éxito al editar
+      isEditing: true, // Establecer isEditing como true al entrar en modo de edició
     });
   };
   
   handleSave = async () => {
     const { nombre, apellido, edad, tipoDocumento, numDocumento, correo, editingClienteId, isEditing } = this.state;
     const data = { nombre, apellido, edad, tipoDocumento, numDocumento, correo };
-
+  
     // Validaciones de datos
     if (!/^[a-zA-Z]+$/.test(nombre)) {
       alert('El nombre solo puede contener letras.');
@@ -95,7 +93,7 @@ export default class Cliente extends React.Component {
       alert('El correo debe terminar en @gmail.com.');
       return;
     }
-
+  
     const url = editingClienteId ? `https://localhost:7284/api/clientes/${editingClienteId}` : 'https://localhost:7284/api/clientes';
   
     try {
@@ -107,34 +105,43 @@ export default class Cliente extends React.Component {
         },
         body: JSON.stringify(data),
       });
-      const responseData = await response.json();
-      console.log('Response:', responseData);
-      
-      if (!isEditing) {
-        // Agregar una nueva línea para actualizar la lista después de agregar un nuevo cliente
-        await this.getClientes();
-        // Recargar la página para obtener los datos actualizados de la base de datos
-        this.forceUpdate();
+  
+      // Verifica si la respuesta tiene datos
+      if (!response.ok) {
+        throw new Error('La respuesta de la red no estuvo bien');
       }
-      
+  
+      // Verifica si la respuesta está vacía o no es válida antes de intentar analizarla como JSON
+      if (response.status === 204) {
+        // Si la respuesta es un código 204 (No Content), significa que la solicitud se realizó con éxito pero no hay contenido para devolver.
+        // En este caso, no necesitas analizar la respuesta JSON.
+        console.log('No hay contenido para devolver');
+      } else {
+        // Analiza la respuesta JSON
+        const responseData = await response.json();
+        console.log('Response:', responseData);
+      }
+  
       // Limpia el estado y cierra el modal
-      this.setState({ 
-        modalVisible: false, 
-        nombre: '', 
-        apellido: '', 
-        edad: '', 
-        tipoDocumento: '', 
-        numDocumento: '', 
-        correo: '', 
-        editingClienteId: null, 
-        isEditing: false, 
-        successMessage: isEditing ? 'Los cambios se guardaron correctamente.' : 'El cliente se agregó correctamente.', // Mensaje de éxito
+      this.setState({
+        modalVisible: false,
+        nombre: '',
+        apellido: '',
+        edad: '',
+        tipoDocumento: '',
+        numDocumento: '',
+        correo: '',
+        editingClienteId: null,
+        isEditing: false,
       });
+  
+      // Actualizar la lista de clientes después de guardar los cambios
+      await this.getClientes();
     } catch (error) {
-      console.error('Error saving cliente:', error);
+      console.error('Error parsing JSON response:', error);
     }
-    
   };
+  
 
   handleDelete = async clienteId => {
     try {
@@ -163,7 +170,7 @@ export default class Cliente extends React.Component {
             }}
           >
             <Text style={{ color: 'white' }}>Agregar</Text>
-          </TouchableOpacity>
+          </TouchableOpacity> 
 
           {/* Agregar un View para crear un espacio */}
           <View style={{ width: 10 }} />
@@ -276,13 +283,6 @@ export default class Cliente extends React.Component {
           <TouchableOpacity onPress={() => this.setState({ modalVisible: false })} style={styles.button}>
             <Text style={styles.buttonText}>Cerrar</Text>
           </TouchableOpacity>
-          
-          {/* Mostrar ventana emergente con el mensaje de éxito */}
-          {this.state.successMessage !== '' && (
-            <View style={styles.successMessageContainer}>
-              <Text style={styles.successMessageText}>{this.state.successMessage}</Text>
-            </View>
-          )}
         </View>
       </Modal>
 
@@ -358,17 +358,6 @@ const styles = StyleSheet.create({
     paddingLeft: 10,
   },
   buttonText: {
-    color: 'white',
-    fontWeight: 'bold',
-    textAlign: 'center',
-  },
-  successMessageContainer: {
-    backgroundColor: '#00FF00',
-    padding: 10,
-    marginVertical: 5,
-    borderRadius: 5,
-  },
-  successMessageText: {
     color: 'white',
     fontWeight: 'bold',
     textAlign: 'center',
