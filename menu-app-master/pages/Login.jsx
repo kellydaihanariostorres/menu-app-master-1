@@ -2,10 +2,12 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, Pressable, StyleSheet, Image, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
+import Icon from 'react-native-vector-icons/FontAwesome';
 
 const Login = ({ navigation }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleLogin = async () => {
     try {
@@ -53,13 +55,21 @@ const Login = ({ navigation }) => {
           />
           <View style={styles.inputWrapper}>
             <Text style={styles.label}>Contraseña</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Ingrese su contraseña"
-              secureTextEntry={true}
-              value={password}
-              onChangeText={(text) => setPassword(text)}
-            />
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <TextInput
+                style={[styles.input, { width: '90%' }]} // Ajuste del ancho del TextInput
+                placeholder="Ingrese su contraseña"
+                secureTextEntry={!showPassword}
+                value={password}
+                onChangeText={(text) => setPassword(text)}
+              />
+              <Pressable
+                onPress={() => setShowPassword(!showPassword)}
+                style={{ position: 'absolute', right: 10 }}
+              >
+                <Icon name={showPassword ? 'eye-slash' : 'eye'} size={20} color="white" />
+              </Pressable>
+            </View>
           </View>
         </View>
         <Pressable style={styles.button} onPress={handleLogin}>
@@ -108,6 +118,7 @@ const styles = StyleSheet.create({
   },
   inputWrapper: {
     marginBottom: 10,
+    position: 'relative',
   },
   input: {
     backgroundColor: 'black',
@@ -118,6 +129,8 @@ const styles = StyleSheet.create({
     padding: 10,
     marginBottom: 5,
     textAlign: 'left',
+    paddingRight: 30, // Añadir espacio para el icono del ojo
+    borderRadius: 20, // Ajustar el radio de los bordes
   },
   button: {
     backgroundColor: '#640000',

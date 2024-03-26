@@ -69,7 +69,7 @@ export default class Cliente extends React.Component {
     const data = { nombre, apellido, edad, tipoDocumento, numDocumento, correo };
   
     // Validaciones de datos
-    if (!/^[a-zA-Z]+$/.test(nombre)) {
+    if (!/^[A-Za-z\s]+$/.test(nombre)) {
       alert('El nombre solo puede contener letras.');
       return;
     }

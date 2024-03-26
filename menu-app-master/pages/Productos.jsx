@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, Text, View, FlatList, TextInput, Button, TouchableOpacity, Modal, ScrollView } from 'react-native';
+import { StyleSheet, Text, View, FlatList, TextInput, TouchableOpacity, Modal } from 'react-native';
 
 export default class Productos extends React.Component {
   constructor(props) {
@@ -15,6 +15,7 @@ export default class Productos extends React.Component {
       marcaProducto: '',
       clasificacionProducto: '',
       editingProductoId: null,
+      isEditing:false,
     };
   }
 
@@ -47,7 +48,7 @@ export default class Productos extends React.Component {
   };
 
   handleEdit = productoId => {
-    const producto = this.state.productos.find(producto => producto.id === productoId);
+    const producto = this.state.productos.find(producto => producto.productoId === productoId); // Corrección
     this.setState({
       nombreProducto: producto.nombreProducto,
       precioProducto: producto.precioProducto,
@@ -55,45 +56,38 @@ export default class Productos extends React.Component {
       clasificacionProducto: producto.clasificacionProducto,
       editingProductoId: productoId,
       modalVisible: true,
+      isEditing: true,
     });
-  };
-
-  handleDelete = async productoId => {
-    try {
-      await fetch(`https://localhost:7284/api/productos/${productoId}`, { method: 'DELETE' });
-      this.getProductos();
-    } catch (error) {
-      console.error('Error deleting producto:', error);
-    }
   };
 
   handleSave = async () => {
     const { nombreProducto, precioProducto, marcaProducto, clasificacionProducto, editingProductoId } = this.state;
-    
+    const data = { nombreProducto, precioProducto, marcaProducto, clasificacionProducto };
+  
     // Validaciones
     if (!/^[A-Za-z\s]+$/.test(nombreProducto)) {
       alert('Nombre debe contener solo letras y espacios');
       return;
     }
-
-    if (!/^\$?(\d{1,3}(\.\d{3})*(\,\d{1,2})?)+$/.test(precioProducto)) {
+  
+    // Corrección en la expresión regular para el precio
+    if (!/^\$?(\d{1,3}(\.\d{1,2})?)+$/.test(precioProducto)) {
       alert('Precio debe estar en formato de precio ($)');
       return;
     }
-
+  
     if (!/^[A-Za-z\s]+$/.test(marcaProducto)) {
       alert('Marca debe contener solo letras y espacios');
       return;
     }
-
+  
     if (!/^[A-Za-z\s]+$/.test(clasificacionProducto)) {
       alert('Clasificación debe contener solo letras y espacios');
       return;
     }
-
-    const data = { nombreProducto, precioProducto, marcaProducto, clasificacionProducto };
+    
     const url = editingProductoId ? `https://localhost:7284/api/productos/${editingProductoId}` : 'https://localhost:7284/api/productos';
-
+  
     try {
       const method = editingProductoId ? 'PUT' : 'POST';
       const response = await fetch(url, {
@@ -103,12 +97,53 @@ export default class Productos extends React.Component {
         },
         body: JSON.stringify(data),
       });
-      const responseData = await response.json();
-      console.log('Response:', responseData);
-      this.getProductos();
-      this.setState({ modalVisible: false, nombreProducto: '', precioProducto: '', marcaProducto: '', clasificacionProducto: '', editingProductoId: null });
+  
+      // Verifica si la respuesta tiene datos
+      if (!response.ok) {
+        throw new Error('La respuesta de la red no estuvo bien');
+      }
+  
+      // Verifica si la respuesta está vacía o no es válida antes de intentar analizarla como JSON
+      if (response.status === 204) {
+        // Si la respuesta es un código 204 (No Content), significa que la solicitud se realizó con éxito pero no hay contenido para devolver.
+        // En este caso, no necesitas analizar la respuesta JSON.
+        console.log('No hay contenido para devolver');
+      } else {
+        // Analiza la respuesta JSON
+        const responseData = await response.json();
+        console.log('Response:', responseData);
+      }
+  
+      // Limpia el estado y cierra el modal
+      this.setState({
+        modalVisible: false,
+        nombreProducto: '',
+        precioProducto: '',
+        marcaProducto: '',
+        clasificacionProducto: '',
+        editingProductoId: null,
+        isEditing:false,
+      });
+  
+      // Actualizar la lista de productos después de guardar los cambios
+      await this.getProductos(); // Corrección
     } catch (error) {
-      console.error('Error saving producto:', error);
+      console.error('Error parsing JSON response:', error);
+    }
+  };
+
+  handleDelete = async productoId => {
+    try {
+      await fetch(`https://localhost:7284/api/productos/${productoId}`, { method: 'DELETE' });
+      
+      // Filtrar los productos para excluir el que se está eliminando
+      const updatedProductos = this.state.productos.filter(producto => producto.productoId !== productoId);
+      const updatedFilteredProductos = this.state.filteredProductos.filter(producto => producto.productoId !== productoId);
+      
+      // Actualizar el estado con los productos filtrados
+      this.setState({ productos: updatedProductos, filteredProductos: updatedFilteredProductos });
+    } catch (error) {
+      console.error('Error deleting producto:', error);
     }
   };
 
@@ -151,26 +186,27 @@ export default class Productos extends React.Component {
               contentContainerStyle={styles.tableGroupDivider}
               data={this.state.filteredProductos}
               renderItem={({ item, index }) => (
-                <TouchableOpacity onPress={() => this.handleEdit(item.id)}>
-                  <View style={styles.row}>
+                <TouchableOpacity onPress={() => this.handleEdit(item.productoId)}>
+                  <View style={styles.row} key={item.productoId}>
                     <Text style={[styles.item, { flex: 0.5 }]}>{index + 1}</Text>
                     <Text style={[styles.item, { flex: 2 }]}>{item.nombreProducto}</Text>
                     <Text style={[styles.item, { flex: 2 }]}>{item.precioProducto}</Text>
                     <Text style={[styles.item, { flex: 1 }]}>{item.marcaProducto}</Text>
                     <Text style={[styles.item, { flex: 3 }]}>{item.clasificacionProducto}</Text>
                     <View style={[styles.buttonGroup, { flex: 1 }]}>
-                      <TouchableOpacity onPress={() => this.handleEdit(item.id)}>
+                      <TouchableOpacity onPress={() => this.handleEdit(item.productoId)}>
                         <Text style={[styles.button, styles.editButton]}>✎</Text>
                       </TouchableOpacity>
-                      <TouchableOpacity onPress={() => this.handleDelete(item.id)}>
+                      <TouchableOpacity onPress={() => this.handleDelete(item.productoId)}>
                         <Text style={[styles.button, styles.deleteButton]}>🗑</Text>
                       </TouchableOpacity>
                     </View>
                   </View>
                 </TouchableOpacity>
               )}
-              keyExtractor={item => item.id}
+              keyExtractor={item => String(item.productoId)} 
             />
+
           </View>
         
 
