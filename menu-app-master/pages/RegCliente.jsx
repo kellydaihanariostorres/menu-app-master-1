@@ -54,9 +54,9 @@ export default class Cliente extends React.Component {
     this.setState({
       nombre: cliente.nombre,
       apellido: cliente.apellido,
-      edad: String(cliente.edad), // Convertir la edad a una cadena
+      edad: String(cliente.edad).toString(), // Convertir la edad a una cadena
       tipoDocumento: cliente.tipoDocumento,
-      numDocumento: String(cliente.numDocumento), // Convertir el número de documento a una cadena
+      numDocumento: String(cliente.numDocumento).toString(), // Convertir el número de documento a una cadena
       correo: cliente.correo,
       editingClienteId: clienteId,
       modalVisible: true,
@@ -66,7 +66,14 @@ export default class Cliente extends React.Component {
 
   handleSave = async () => {
     const { nombre, apellido, edad, tipoDocumento, numDocumento, correo, editingClienteId } = this.state;
-    const data = { nombre, apellido, edad, tipoDocumento, numDocumento, correo };
+    const data = { 
+      nombre: this.state.nombre,
+      apellido: this.state.apellido,
+      edad: parseInt(this.state.edad), // Asegúrate de convertir la edad de nuevo a un número antes de enviarla
+      tipoDocumento: this.state.tipoDocumento,
+      numDocumento: parseInt(this.state.numDocumento), // Asegúrate de convertir el número de documento de nuevo a un número
+      correo: this.state.correo 
+    };
   
     // Validaciones de datos
     if (!/^[a-zA-Z]+$/.test(nombre)) {

@@ -54,22 +54,22 @@ export default class Cliente extends React.Component {
     this.setState({
       nombre: cliente.nombre,
       apellido: cliente.apellido,
-      edad: cliente.edad,
+      edad: String(cliente.edad), // Convertir la edad a una cadena
       tipoDocumento: cliente.tipoDocumento,
-      numDocumento: cliente.numDocumento,
+      numDocumento: String(cliente.numDocumento), // Convertir el número de documento a una cadena
       correo: cliente.correo,
       editingClienteId: clienteId,
       modalVisible: true,
-      isEditing: true, // Establecer isEditing como true al entrar en modo de edició
+      isEditing: true,
     });
   };
-  
+
   handleSave = async () => {
-    const { nombre, apellido, edad, tipoDocumento, numDocumento, correo, editingClienteId, isEditing } = this.state;
+    const { nombre, apellido, edad, tipoDocumento, numDocumento, correo, editingClienteId } = this.state;
     const data = { nombre, apellido, edad, tipoDocumento, numDocumento, correo };
   
     // Validaciones de datos
-    if (!/^[A-Za-z\s]+$/.test(nombre)) {
+    if (!/^[a-zA-Z]+$/.test(nombre)) {
       alert('El nombre solo puede contener letras.');
       return;
     }
@@ -133,14 +133,17 @@ export default class Cliente extends React.Component {
         correo: '',
         editingClienteId: null,
         isEditing: false,
+        successMessage: 'Los cambios se han guardado correctamente', // Agregar mensaje de éxito
       });
   
       // Actualizar la lista de clientes después de guardar los cambios
       await this.getClientes();
     } catch (error) {
-      console.error('Error parsing JSON response:', error);
+      console.error('Error al guardar los cambios:', error);
+      alert('Error al guardar los cambios. Por favor, inténtalo de nuevo.');
     }
   };
+  
   
 
   handleDelete = async clienteId => {
@@ -193,8 +196,6 @@ export default class Cliente extends React.Component {
               <Text style={[styles.tableHeader, { flex: 2, backgroundColor: '#440000' }]}>CORREO</Text>
               <View style={[styles.tableHeader, { flex: 1, backgroundColor: '#440000' }]}></View>
             </View>
-
-            
             <FlatList
               contentContainerStyle={styles.tableGroupDivider}
               data={this.state.filteredClientes}
@@ -223,70 +224,77 @@ export default class Cliente extends React.Component {
             />
         </View>
 
-      <Modal
-        visible={this.state.modalVisible}
-        animationType="slide"
-        onRequestClose={() => {
-          // Limpia el estado y cierra el modal
-          this.setState({ 
-            modalVisible: false, 
-            nombre: '', 
-            apellido: '', 
-            edad: '', 
-            tipoDocumento: '', 
-            numDocumento: '', 
-            correo: '', 
-            editingClienteId: null, 
-            isEditing: false, 
-            successMessage: '', // Limpiar mensaje de éxito al cerrar el modal
-          });
-        }}
-      >
-        <View style={styles.modalContainer}>
-          <TextInput
-            placeholder="Nombre"
-            value={this.state.nombre}
-            onChangeText={nombre => this.setState({ nombre })}
-            style={styles.input}
-          />
-          <TextInput
-            placeholder="Apellido"
-            value={this.state.apellido}
-            onChangeText={apellido => this.setState({ apellido })}
-            style={styles.input}
-          />
-          <TextInput
-            placeholder="Edad"
-            value={this.state.edad}
-            onChangeText={edad => this.setState({ edad })}
-            style={styles.input}
-          />
-          <TextInput
-            placeholder="Tipo de Documento"
-            value={this.state.tipoDocumento}
-            onChangeText={tipoDocumento => this.setState({ tipoDocumento })}
-            style={styles.input}
-          />
-          <TextInput
-            placeholder="Número de Documento"
-            value={this.state.numDocumento}
-            onChangeText={numDocumento => this.setState({ numDocumento })}
-            style={styles.input}
-          />
-          <TextInput
-            placeholder="Correo"
-            value={this.state.correo}
-            onChangeText={correo => this.setState({ correo })}
-            style={styles.input}
-          />
-          <TouchableOpacity onPress={this.handleSave} style={styles.button}>
-            <Text style={styles.buttonText}>Guardar</Text>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => this.setState({ modalVisible: false })} style={styles.button}>
-            <Text style={styles.buttonText}>Cerrar</Text>
-          </TouchableOpacity>
-        </View>
-      </Modal>
+        <Modal
+          visible={this.state.modalVisible}
+          animationType="slide"
+          onRequestClose={() => {
+            // Limpia el estado y cierra el modal
+            this.setState({ 
+              modalVisible: false, 
+              nombre: '', 
+              apellido: '', 
+              edad: '', 
+              tipoDocumento: '', 
+              numDocumento: '', 
+              correo: '', 
+              editingClienteId: null, 
+              isEditing: false, 
+              successMessage: '', // Limpiar mensaje de éxito al cerrar el modal
+            });
+          }}
+        >
+          <View style={styles.modalContainer}>
+            {/* Aquí es donde puedes encontrar los campos de entrada de texto para la edición */}
+            <TextInput
+              placeholder="Nombre"
+              value={this.state.nombre}
+              onChangeText={nombre => this.setState({ nombre })}
+              style={styles.input}
+            />
+            <TextInput
+              placeholder="Apellido"
+              value={this.state.apellido}
+              onChangeText={apellido => this.setState({ apellido })}
+              style={styles.input}
+            />
+            <TextInput
+              placeholder="Edad"
+              value={this.state.edad}
+              onChangeText={edad => this.setState({ edad })}
+              style={styles.input}
+              keyboardType="numeric" // Teclado numérico para la edad
+            />
+            <TextInput
+              placeholder="Tipo de Documento"
+              value={this.state.tipoDocumento}
+              onChangeText={tipoDocumento => this.setState({ tipoDocumento })}
+              style={styles.input}
+            />
+            <TextInput
+              placeholder="Número de Documento"
+              value={this.state.numDocumento}
+              onChangeText={numDocumento => this.setState({ numDocumento })}
+              style={styles.input}
+              keyboardType="numeric" // Teclado numérico para el número de documento
+            />
+            <TextInput
+              placeholder="Correo"
+              value={this.state.correo}
+              onChangeText={correo => this.setState({ correo })}
+              style={styles.input}
+            />
+            {/* Fin de los campos de entrada de texto */}
+            
+            {/* Botones de guardar y cerrar el modal */}
+            <TouchableOpacity onPress={this.handleSave} style={styles.button}>
+              <Text style={styles.buttonText}>Guardar</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => this.setState({ modalVisible: false })} style={styles.button}>
+              <Text style={styles.buttonText}>Cerrar</Text>
+            </TouchableOpacity>
+          </View>
+        </Modal>
+
 
       </View>
     );
