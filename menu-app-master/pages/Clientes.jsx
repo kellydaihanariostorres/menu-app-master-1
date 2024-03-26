@@ -160,7 +160,7 @@ export default class Cliente extends React.Component {
     return (
       <View style={styles.container}>
         <View style={styles.buttonContainer}>
-          <TouchableOpacity
+          {/*<TouchableOpacity
             onPress={() => this.setState({ modalVisible: true })}
             style={{
               backgroundColor: '#440000',
@@ -170,7 +170,7 @@ export default class Cliente extends React.Component {
             }}
           >
             <Text style={{ color: 'white' }}>Agregar</Text>
-          </TouchableOpacity> 
+          </TouchableOpacity> */}
 
           {/* Agregar un View para crear un espacio */}
           <View style={{ width: 10 }} />
@@ -193,6 +193,8 @@ export default class Cliente extends React.Component {
               <Text style={[styles.tableHeader, { flex: 2, backgroundColor: '#440000' }]}>CORREO</Text>
               <View style={[styles.tableHeader, { flex: 1, backgroundColor: '#440000' }]}></View>
             </View>
+
+            
             <FlatList
               contentContainerStyle={styles.tableGroupDivider}
               data={this.state.filteredClientes}
