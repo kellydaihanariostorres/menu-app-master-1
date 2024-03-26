@@ -27,7 +27,13 @@ export default class Cliente extends React.Component {
 
   getClientes = () => {
     this.setState({ loading: true });
-    fetch('https://localhost:7284/api/clientes')
+    fetch('https://localhost:7284/api/clientes', {
+      method: 'GET', // Método GET
+      headers: {
+        'Cache-Control': 'no-cache', // Encabezado Cache-Control: no-cache
+        'Content-Type': 'application/json',
+      },
+    })
       .then(res => res.json())
       .then(data => {
         this.setState({
@@ -49,14 +55,42 @@ export default class Cliente extends React.Component {
     this.setState({ filteredClientes });
   };
 
+  handleDelete = async (clienteId) => {
+    try {
+      const response = await fetch(`https://localhost:7284/api/clientes/${clienteId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'Cache-Control': 'no-cache',
+        },
+      });
+  
+      if (!response.ok) {
+        throw new Error('La respuesta de la red no estuvo bien');
+      }
+  
+      // Filtrar los clientes para excluir al cliente eliminado
+      const updatedClientes = this.state.clientes.filter(cliente => cliente.clienteId !== clienteId);
+      this.setState({
+        clientes: updatedClientes,
+        filteredClientes: updatedClientes,
+      });
+  
+      console.log('Cliente eliminado correctamente');
+    } catch (error) {
+      console.error('Error al eliminar el cliente:', error);
+      alert('Error al eliminar el cliente. Por favor, inténtalo de nuevo.');
+    }
+  };
+
   handleEdit = clienteId => {
     const cliente = this.state.clientes.find(cliente => cliente.clienteId === clienteId);
     this.setState({
       nombre: cliente.nombre,
       apellido: cliente.apellido,
-      edad: String(cliente.edad), // Convertir la edad a una cadena
+      edad: String(cliente.edad),
       tipoDocumento: cliente.tipoDocumento,
-      numDocumento: String(cliente.numDocumento), // Convertir el número de documento a una cadena
+      numDocumento: String(cliente.numDocumento),
       correo: cliente.correo,
       editingClienteId: clienteId,
       modalVisible: true,
@@ -64,16 +98,24 @@ export default class Cliente extends React.Component {
     });
   };
 
+
   handleSave = async () => {
     const { nombre, apellido, edad, tipoDocumento, numDocumento, correo, editingClienteId } = this.state;
-    const data = { nombre, apellido, edad, tipoDocumento, numDocumento, correo };
+    const data = { 
+      nombre,
+      apellido,
+      edad: parseInt(edad),
+      tipoDocumento,
+      numDocumento: parseInt(numDocumento),
+      correo
+    };
   
     // Validaciones de datos
-    if (!/^[a-zA-Z]+$/.test(nombre)) {
+    if (!/^[a-zA-Z\s]+$/.test(nombre)) {
       alert('El nombre solo puede contener letras.');
       return;
     }
-    if (!/^[a-zA-Z]+$/.test(apellido)) {
+    if (!/^[a-zA-Z\s]+$/.test(apellido)) {
       alert('El apellido solo puede contener letras.');
       return;
     }
@@ -95,33 +137,55 @@ export default class Cliente extends React.Component {
     }
   
     const url = editingClienteId ? `https://localhost:7284/api/clientes/${editingClienteId}` : 'https://localhost:7284/api/clientes';
+    const method = editingClienteId ? 'PUT' : 'POST';
   
     try {
-      const method = editingClienteId ? 'PUT' : 'POST';
+      // Realiza la solicitud para guardar los cambios
       const response = await fetch(url, {
         method,
         headers: {
           'Content-Type': 'application/json',
+          'Cache-Control': 'no-cache',
         },
         body: JSON.stringify(data),
       });
-  
-      // Verifica si la respuesta tiene datos
+    
       if (!response.ok) {
         throw new Error('La respuesta de la red no estuvo bien');
       }
-  
-      // Verifica si la respuesta está vacía o no es válida antes de intentar analizarla como JSON
+    
+      let responseData; // Define responseData aquí para que esté disponible en todo el bloque try
+    
       if (response.status === 204) {
-        // Si la respuesta es un código 204 (No Content), significa que la solicitud se realizó con éxito pero no hay contenido para devolver.
-        // En este caso, no necesitas analizar la respuesta JSON.
         console.log('No hay contenido para devolver');
       } else {
-        // Analiza la respuesta JSON
-        const responseData = await response.json();
+        responseData = await response.json(); // Asigna el valor de responseData
         console.log('Response:', responseData);
       }
-  
+    
+      // Si estás guardando un nuevo cliente, agrega el nuevo cliente a la lista actual
+      // Si estás editando un cliente existente, actualiza los datos del cliente en la lista
+      if (editingClienteId) {
+        // Actualiza los datos del cliente en la lista
+        const updatedClientes = this.state.clientes.map(cliente => {
+          if (cliente.clienteId === editingClienteId) {
+            return { ...cliente, ...data };
+          }
+          return cliente;
+        });
+        this.setState({
+          clientes: updatedClientes,
+          filteredClientes: updatedClientes, // Actualiza también los clientes filtrados
+        });
+      } else {
+        // Agrega el nuevo cliente a la lista
+        const newCliente = { clienteId: responseData.clienteId, ...data };
+        this.setState(prevState => ({
+          clientes: [...prevState.clientes, newCliente],
+          filteredClientes: [...prevState.clientes, newCliente], // Actualiza también los clientes filtrados
+        }));
+      }
+    
       // Limpia el estado y cierra el modal
       this.setState({
         modalVisible: false,
@@ -133,29 +197,14 @@ export default class Cliente extends React.Component {
         correo: '',
         editingClienteId: null,
         isEditing: false,
-        successMessage: 'Los cambios se han guardado correctamente', // Agregar mensaje de éxito
+        successMessage: 'Los cambios se han guardado correctamente',
       });
-  
-      // Actualizar la lista de clientes después de guardar los cambios
-      await this.getClientes();
+    
     } catch (error) {
       console.error('Error al guardar los cambios:', error);
       alert('Error al guardar los cambios. Por favor, inténtalo de nuevo.');
     }
-  };
-  
-  
-
-  handleDelete = async clienteId => {
-    try {
-      await fetch(`https://localhost:7284/api/clientes/${clienteId}`, { method: 'DELETE' });
-      // Eliminar la fila correspondiente de los datos del cliente y de los clientes filtrados
-      const updatedClientes = this.state.clientes.filter(cliente => cliente.clienteId !== clienteId);
-      const updatedFilteredClientes = this.state.filteredClientes.filter(cliente => cliente.clienteId !== clienteId);
-      this.setState({ clientes: updatedClientes, filteredClientes: updatedFilteredClientes });
-    } catch (error) {
-      console.error('Error deleting cliente:', error);
-    }
+    
   };
   
   
@@ -173,7 +222,7 @@ export default class Cliente extends React.Component {
             }}
           >
             <Text style={{ color: 'white' }}>Agregar</Text>
-          </TouchableOpacity> */}
+          </TouchableOpacity> /*}
 
           {/* Agregar un View para crear un espacio */}
           <View style={{ width: 10 }} />
