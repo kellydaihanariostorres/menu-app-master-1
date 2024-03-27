@@ -15,6 +15,7 @@ export default class Bodega extends React.Component {
       estado: '',
       ciudad: '',
       editingBodegaId: null,
+      isEditing: false,
     };
   }
 
@@ -24,7 +25,13 @@ export default class Bodega extends React.Component {
 
   getBodegas = () => {
     this.setState({ loading: true });
-    fetch('https://localhost:7284/api/bodegas')
+    fetch('https://localhost:7284/api/bodegas',{
+      method: 'GET', // Método GET
+      headers: {
+        'Cache-Control': 'no-cache', // Encabezado Cache-Control: no-cache
+        'Content-Type': 'application/json',
+      },
+    })
       .then(res => res.json())
       .then(data => {
         this.setState({
@@ -46,6 +53,35 @@ export default class Bodega extends React.Component {
     this.setState({ filteredBodegas });
   };
 
+  handleDelete = async (bodegaId) => {
+    try {
+      const response = await fetch(`https://localhost:7284/api/bodegas/${bodegaId}`, { // Aquí cambiamos de bodegasId a bodegaId
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'Cache-Control': 'no-cache',
+        },
+      });
+  
+      if (!response.ok) {
+        throw new Error('La respuesta de la red no estuvo bien');
+      }
+  
+      // Filtrar los bodegas para excluir a la bodega eliminadada
+      const updatedBodegas = this.state.bodegas.filter(bodega => bodega.bodegaId !== bodegaId);
+      this.setState({
+        bodegas: updatedBodegas,
+        filteredBodegas: updatedBodegas,
+      });
+  
+      console.log('Bodega eliminada correctamente');
+    } catch (error) {
+      console.error('Error al eliminar la bodega:', error);
+      alert('Error al eliminar la bodega. Por favor, inténtalo de nuevo.');
+    }
+  };
+  
+
   handleEdit = bodegaId => {
     const bodega = this.state.bodegas.find(bodega => bodega.bodegaId === bodegaId);
     this.setState({
@@ -58,80 +94,99 @@ export default class Bodega extends React.Component {
     });
   };
 
-  handleDelete = async bodegaId => {
-    try {
-      await fetch(`https://localhost:7284/api/bodegas/${bodegaId}`, { method: 'DELETE' });
-      // Eliminar la fila correspondiente de los datos de la bodega y de las bodegas filtradas
-      const updatedBodegas = this.state.bodegas.filter(bodega => bodega.bodegaId !== bodegaId);
-      const updatedFilteredBodegas = this.state.filteredBodegas.filter(bodega => bodega.bodegaId !== bodegaId);
-      this.setState({ bodegas: updatedBodegas, filteredBodegas: updatedFilteredBodegas });
-    } catch (error) {
-      console.error('Error deleting bodega:', error);
-    }
-  };
-  
-
   handleSave = async () => {
     const { nombre, direccion, estado, ciudad, editingBodegaId } = this.state;
-  
-    // Validación de nombre: solo letras
-    const nombreRegex = /^[A-Za-z\s]+$/;
-    if (!nombreRegex.test(nombre)) {
-      alert('Nombre inválido. Por favor, ingrese solo letras.');
+    const data = { 
+      nombre,
+      direccion,
+      estado,
+      ciudad
+    };
+
+    // Validaciones de datos
+    if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/.test(nombre)) {
+      alert('El nombre solo puede contener letras.');
       return;
     }
     
     // Validación de estado: solo 'Activo' o 'Inactivo'
-    if (estado !== 'Activo' && estado !== 'Inactivo') {
+    if (estado !== 'Activa' && estado !== 'Inactiva') {
       alert('Estado inválido. Por favor, ingrese "Activo" o "Inactivo".');
       return;
     }
   
-    // Validación de ciudad: solo letras
-    const ciudadRegex = /^[A-Za-z\s]+$/;
-    if (!ciudadRegex.test(ciudad)) {
-      alert('Ciudad inválida. Por favor, ingrese solo letras.');
+    if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/.test(ciudad)) {
+      alert('La ciudad solo puede contener letras.');
       return;
     }
 
-    // Una vez que todas las validaciones pasan, procedes a guardar los datos
-    const data = { nombre, direccion, estado, ciudad };
-  
+    const url = editingBodegaId ? `https://localhost:7284/api/bodegas/${editingBodegaId}` : 'https://localhost:7284/api/bodegas';
+    const method = editingBodegaId ? 'PUT' : 'POST';
+
     try {
-      let url, method;
-      if (editingBodegaId) {
-        url = `https://localhost:7284/api/bodegas/${editingBodegaId}`;
-        method = 'PUT';
-      } else {
-        url = 'https://localhost:7284/api/bodegas';
-        method = 'POST';
-      }
-  
+      // Realiza la solicitud para guardar los cambios
       const response = await fetch(url, {
         method,
         headers: {
           'Content-Type': 'application/json',
+          'Cache-Control': 'no-cache',
         },
         body: JSON.stringify(data),
       });
-  
-      const responseData = await response.json();
-      console.log('Response:', responseData);
-  
-      // Si se está agregando una nueva bodega, actualizar el estado con la nueva bodega
-      if (!editingBodegaId) {
+    
+      if (!response.ok) {
+        throw new Error('La respuesta de la red no estuvo bien');
+      }
+    
+      let responseData; 
+    
+      if (response.status === 204) {
+        console.log('No hay contenido para devolver');
+      } else {
+        responseData = await response.json(); // Asigna el valor de responseData
+        console.log('Response:', responseData);
+      }
+    
+      // Si estás guardando una nueva bodega, agrega la nueva bodega a la lista actual
+      // Si estás editando una bodega existente, actualiza los datos de la bodega en la lista
+      if (editingBodegaId) {
+        // Actualiza los datos de la bodega en la lista
+        const updatedBodegas = this.state.bodegas.map(bodega => {
+          if (bodega.bodegaId === editingBodegaId) {
+            return { ...bodega, ...data };
+          }
+          return bodega;
+        });
+        this.setState({
+          bodegas: updatedBodegas,
+          filteredBodegas: updatedBodegas, // Actualiza también las bodegas filtrada cliente
+        });
+      } else {
+        // Agrega la nueva bodega a la lista
+        const newBodega = { bodegaId: responseData.bodegaId, ...data };
         this.setState(prevState => ({
-          bodegas: [...prevState.bodegas, responseData], // Agregar la nueva bodega al estado
-          filteredBodegas: [...prevState.bodegas, responseData], // Agregar la nueva bodega a las bodegas filtradas
+          bodegas: [...prevState.bodegas, newBodega],
+          filteredBodegas: [...prevState.bodegas, newBodega], // Actualiza también las bodegas filtrados
         }));
       }
-  
-      this.setState({ modalVisible: false, nombre: '', direccion: '', estado: '', ciudad: '', editingBodegaId: null });
+    
+      // Limpia el estado y cierra el modal
+      this.setState({
+        modalVisible: false,
+        nombre: '',
+        direccion: '',
+        estado: '',
+        ciudad: '',
+        editingBodegaId: null,
+        isEditing: false,
+        successMessage: 'Los cambios se han guardado correctamente',
+      });
+    
     } catch (error) {
-      console.error('Error saving bodega:', error);
-    }
+      console.error('Error al guardar los cambios:', error);
+      alert('Error al guardar los cambios. Por favor, inténtalo de nuevo.');
+    } 
   };
-  
   
 
   render() {
@@ -216,7 +271,7 @@ export default class Bodega extends React.Component {
             style={styles.input}
           />
           <TextInput
-            placeholder="Estado"
+            placeholder="Estado (Activa o Inactiva)"
             value={this.state.estado}
             onChangeText={estado => this.setState({ estado })}
             style={styles.input}

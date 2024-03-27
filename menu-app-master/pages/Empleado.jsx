@@ -1,5 +1,6 @@
 import React from 'react';
-import { StyleSheet, Text, View, FlatList, TextInput, Button, TouchableOpacity, Modal, ScrollView } from 'react-native';
+import { StyleSheet, Text, View, FlatList, TextInput, TouchableOpacity, Modal } from 'react-native';
+
 
 export default class Empleado extends React.Component {
   constructor(props) {
@@ -19,6 +20,7 @@ export default class Empleado extends React.Component {
       sueldo: '',
       bodegaId: '',
       editingEmpleadoId: null,
+      isEditing: false,
     };
   }
 
@@ -28,7 +30,13 @@ export default class Empleado extends React.Component {
 
   getEmpleados = () => {
     this.setState({ loading: true });
-    fetch('https://localhost:7284/api/empleados')
+    fetch('https://localhost:7284/api/empleados', {
+      method: 'GET', // Método GET
+      headers: {
+        'Cache-Control': 'no-cache', // Encabezado Cache-Control: no-cache
+        'Content-Type': 'application/json',
+      },
+    })
       .then(res => res.json())
       .then(data => {
         this.setState({
@@ -63,55 +71,118 @@ export default class Empleado extends React.Component {
       bodegaId: empleado.bodegaId,
       editingEmpleadoId: empleadoId,
       modalVisible: true,
+      isEditing: true,
     });
   };
 
-  handleDelete = async empleadoId => {
+  handleDelete = async (empleadoId) => { 
     try {
-      await fetch(`https://localhost:7284/api/empleados/${empleadoId}`, { method: 'DELETE' });
-      this.getEmpleados();
+      const response = await fetch(`https://localhost:7284/api/empleados/${empleadoId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'Cache-Control': 'no-cache',
+        },
+      });
+  
+      if (!response.ok) {
+        throw new Error('La respuesta de la red no estuvo bien');
+      }
+  
+      // Filtrar los empleados para excluir al empleado eliminado
+      const updatedEmpleados = this.state.empleados.filter(empleado => empleado.empleadoId !== empleadoId);
+      this.setState({
+        empleados: updatedEmpleados,
+        filteredEmpleados: updatedEmpleados,
+      });
+  
+      console.log('Empleado eliminado empleado correctamente');
     } catch (error) {
-      console.error('Error deleting empleado:', error);
+      console.error('Error al eliminar el empleado:', error);
+      alert('Error al eliminar el empleado. Por favor, inténtalo de nuevo.');
     }
   };
-
   handleSave = async () => {
     const { nombre, apellido, documento, cargo, fechaInicio, fechaFin, sueldo, bodegaId, editingEmpleadoId } = this.state;
-    const data = { nombre, apellido, documento, cargo, fechaInicio, fechaFin, sueldo, bodegaId };
-    const url = editingEmpleadoId ? `https://localhost:7284/api/empleados/${editingEmpleadoId}` : 'https://localhost:7284/api/empleados';
-
-    try {
-      const method = editingEmpleadoId ? 'PUT' : 'POST';
-      const response = await fetch(url, {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-      });
-      const responseData = await response.json();
-      console.log('Response:', responseData);
-      this.getEmpleados();
-      this.setState({ modalVisible: false, nombre: '', apellido: '', documento: '', cargo: '', fechaInicio: '', fechaFin: '', sueldo: '', bodegaId: '', editingEmpleadoId: null });
-    } catch (error) {
-      console.error('Error saving empleado:', error);
+    const data = { 
+      nombre, 
+      apellido, 
+      documento, 
+      cargo, 
+      fechaInicio, 
+      fechaFin, 
+      sueldo, 
+      bodegaId 
+    };
+  
+    //Validacion de datos 
+    if (!/^[a-zA-Z\s]+$/.test(nombre)) {
+      alert('El nombre solo puede contener letras.');
+      return;
     }
-  };
-  handleAdd = async () => {
-    const { nombre, apellido, documento, cargo, fechaInicio, fechaFin, sueldo, bodegaId } = this.state;
-    const data = { nombre, apellido, documento, cargo, fechaInicio, fechaFin, sueldo, bodegaId };
+    if (!/^[a-zA-Z\s]+$/.test(apellido)) {
+      alert('El apellido solo puede contener letras.');
+      return;
+    }
+    if (!/^\d{7,10}$/.test(documento)) {
+      alert('El número de documento debe contener entre 7 y 10 dígitos.');
+      return;
+    }
+  
+    // Determinar el método HTTP a utilizar según si estamos editando o creando un empleado
+    const method = editingEmpleadoId ? 'PUT' : 'POST';
+  
+    // Construir la URL para la solicitud
+    const url = editingEmpleadoId ? `https://localhost:7284/api/empleados/${editingEmpleadoId}` : 'https://localhost:7284/api/empleados';
   
     try {
-      const response = await fetch('https://localhost:7284/api/empleados', {
-        method: 'POST',
+      // Realizar la solicitud para guardar los cambios
+      const response = await fetch(url, {
+        method: method,
         headers: {
           'Content-Type': 'application/json',
+          'Cache-Control': 'no-cache',
         },
         body: JSON.stringify(data),
       });
-      const responseData = await response.json();
-      console.log('Response:', responseData);
-      this.getEmpleados(); // Actualizar la lista de empleados después de agregar uno nuevo
+  
+      if (!response.ok) {
+        throw new Error('La respuesta de la red no estuvo bien');
+      }
+  
+      let responseData; // Define responseData aquí para que esté disponible en todo el bloque try
+  
+      if (response.status === 204) {
+        console.log('No hay contenido para devolver');
+      } else {
+        responseData = await response.json(); // Asigna el valor de responseData
+        console.log('Response:', responseData);
+      }
+  
+      // Si estás guardando un nuevo empleado, agrega el nuevo empleado a la lista actual
+      // Si estás editando un empleado existente, actualiza los datos del empleado en la lista
+      if (editingEmpleadoId) {
+        // Actualiza los datos del empleado en la lista
+        const updatedEmpleados = this.state.empleados.map(empleado => {
+          if (empleado.empleadoId === editingEmpleadoId) {
+            return { ...empleado, ...data };
+          }
+          return empleado;
+        });
+        this.setState({
+          empleados: updatedEmpleados,
+          filteredEmpleados: updatedEmpleados, // Actualiza también los empleadoss filtrados
+        });
+      } else {
+        // Agrega el nuevo empleados a la lista
+        const newEmpleado = { EmpleadoeId: responseData.empleadoId, ...data };
+        this.setState(prevState => ({
+          empleados: [...prevState.empleados, newEmpleado],
+          filteredEmpleados: [...prevState.empleados, newEmpleado], // Actualiza también los empleados filtrados
+        }));
+      }
+  
+      // Limpia el estado y cierra el modal
       this.setState({
         modalVisible: false,
         nombre: '',
@@ -122,14 +193,18 @@ export default class Empleado extends React.Component {
         fechaFin: '',
         sueldo: '',
         bodegaId: '',
-        editingEmpleadoId: null,
+        editingClienteId: null,
+        isEditing: false,
+        successMessage: 'Los cambios se han guardado correctamente',
       });
+  
     } catch (error) {
-      console.error('Error adding empleado:', error);
+      console.error('Error al guardar los cambios:', error);
+      alert('Error al guardar los cambios. Por favor, inténtalo de nuevo.');
     }
   };
-  
 
+  
   render() {
     return (
       <View style={styles.container}>
@@ -201,9 +276,26 @@ export default class Empleado extends React.Component {
         <Modal
           visible={this.state.modalVisible}
           animationType="slide"
-          onRequestClose={() => this.setState({ modalVisible: false })}
+          onRequestClose={() => {
+            // Limpia el estado y cierra el modal
+            this.setState({ 
+              modalVisible: false,
+              nombre: '',
+              apellido: '',
+              documento: '',
+              cargo: '',
+              fechaInicio: '',
+              fechaFin: '',
+              sueldo: '',
+              bodegaId: '',
+              editingEmpleadoId: null,
+              isEditing: false,
+              successMessage: '', // Limpiar mensaje de éxito al cerrar el modal
+            });
+          }}
         >
           <View style={styles.modalContainer}>
+             {/* Aquí es donde puedes encontrar los campos de entrada de texto para la edición */}
             <TextInput
               placeholder="Nombre"
               value={this.state.nombre}
@@ -252,19 +344,22 @@ export default class Empleado extends React.Component {
               onChangeText={bodegaId => this.setState({ bodegaId })}
               style={styles.input}
             />
-            <TouchableOpacity onPress={this.handleSave} style={styles.buttont}>
+             {/* Fin de los campos de entrada de texto */}
+            
+            {/* Botones de guardar y cerrar el modal */}
+            <TouchableOpacity onPress={this.handleSave} style={styles.button}>
               <Text style={styles.buttonText}>Guardar</Text>
             </TouchableOpacity>
-            <TouchableOpacity onPress={this.handleAdd} style={styles.buttont}>
-              <Text style={styles.buttonText}>Agregar Empleado</Text>
+            <TouchableOpacity onPress={() => this.setState({ modalVisible: false })} style={styles.button}>
+              <Text style={styles.buttonText}>Cerrar</Text>
             </TouchableOpacity>
           </View>
         </Modal>
-
       </View>
     );
   }
 }
+
 
 const styles = StyleSheet.create({
   container: {
@@ -282,8 +377,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     flex: 1,
     paddingLeft: 10,
-    borderRadius: '10px',
-    color :'black',
+    borderRadius: 10,
+    color: 'black',
     backgroundColor: 'white',
     marginBottom: 10,
   },
@@ -304,10 +399,10 @@ const styles = StyleSheet.create({
     justifyContent: 'space-around',
   },
   button: {
-    padding: 5,
-    borderRadius: 5, // Ajuste: Cambiar a 5 para que sea ovalado
-    textAlign: 'center',
-    borderWidth: 1,
+    backgroundColor: '#440000',
+    padding: 10,
+    borderRadius: 5,
+    marginVertical: 5,
   },
   editButton: {
     backgroundColor: '#440000',
@@ -332,17 +427,10 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     paddingLeft: 10,
   },
-  buttont: {
-    backgroundColor: '#440000', // Color de fondo del botón
-    padding: 10, // Espaciado interno del botón
-    borderRadius: 50, // Bordes redondeados del botón
-    marginBottom: 10, // Espaciado inferior del botón
-    width: '40%', // Ancho del botón
-    alignItems: 'center', // Alinear contenido del botón al centro
-  },
   buttonText: {
-    color: 'white', // Color del texto del botón
-    fontWeight: 'bold', // Negrita del texto del botón
+    color: 'white',
+    fontWeight: 'bold',
+    textAlign: 'center',
   },
   tableHeader: {
     flex: 1,

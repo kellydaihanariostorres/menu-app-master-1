@@ -111,11 +111,11 @@ export default class Cliente extends React.Component {
     };
   
     // Validaciones de datos
-    if (!/^[a-zA-Z\s]+$/.test(nombre)) {
+    if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/.test(nombre)) {
       alert('El nombre solo puede contener letras.');
       return;
     }
-    if (!/^[a-zA-Z\s]+$/.test(apellido)) {
+    if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/.test(apellido)) {
       alert('El apellido solo puede contener letras.');
       return;
     }
@@ -154,7 +154,7 @@ export default class Cliente extends React.Component {
         throw new Error('La respuesta de la red no estuvo bien');
       }
     
-      let responseData; // Define responseData aquí para que esté disponible en todo el bloque try
+      let responseData; 
     
       if (response.status === 204) {
         console.log('No hay contenido para devolver');
@@ -203,8 +203,7 @@ export default class Cliente extends React.Component {
     } catch (error) {
       console.error('Error al guardar los cambios:', error);
       alert('Error al guardar los cambios. Por favor, inténtalo de nuevo.');
-    }
-    
+    } 
   };
   
   
@@ -343,8 +342,6 @@ export default class Cliente extends React.Component {
             </TouchableOpacity>
           </View>
         </Modal>
-
-
       </View>
     );
   }
