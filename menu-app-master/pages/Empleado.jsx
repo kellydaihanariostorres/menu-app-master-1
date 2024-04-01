@@ -1,5 +1,7 @@
 import React from 'react';
 import { StyleSheet, Text, View, FlatList, TextInput, TouchableOpacity, Modal } from 'react-native';
+import { Picker } from 'react-native';
+import moment from 'moment';
 
 
 export default class Empleado extends React.Component {
@@ -21,6 +23,7 @@ export default class Empleado extends React.Component {
       bodegaId: '',
       editingEmpleadoId: null,
       isEditing: false,
+      bodegas: [], // Nuevo estado para almacenar las bodegas
     };
   }
 
@@ -28,6 +31,31 @@ export default class Empleado extends React.Component {
     this.getEmpleados();
   }
 
+  getBodegas = () => {
+    fetch('https://localhost:7284/api/bodegas', {
+      method: 'GET',
+      headers: {
+        'Cache-Control': 'no-cache',
+        'Content-Type': 'application/json',
+      },
+    })
+      .then(res => res.json())
+      .then(data => {
+        this.setState({
+          bodegas: data,
+        });
+      })
+      .catch(error => {
+        console.error('Error fetching data:', error);
+      });
+  };
+  
+  // Llamar a getBodegas en componentDidMount
+  componentDidMount() {
+    this.getEmpleados();
+    this.getBodegas(); // Llama a la función para obtener las bodegas
+  }
+  
   getEmpleados = () => {
     this.setState({ loading: true });
     fetch('https://localhost:7284/api/empleados', {
@@ -114,7 +142,20 @@ export default class Empleado extends React.Component {
       sueldo, 
       bodegaId 
     };
-  
+    
+    // Validación de las fechas
+    const fechaInicioMoment = moment(fechaInicio, 'DD/MM/YYYY', true); // Formato: DD/MM/AAAA
+    const fechaFinMoment = moment(fechaFin, 'DD/MM/YYYY', true); // Formato: DD/MM/AAAA
+
+    if (!fechaInicioMoment.isValid() || !fechaFinMoment.isValid()) {
+      alert('Por favor, introduce fechas válidas en el formato AAAA/MM/DD.');
+      return;
+    }
+
+    if (fechaFinMoment.diff(fechaInicioMoment, 'years') > 60) {
+      alert('La diferencia entre la fecha fin y la fecha de inicio no puede ser mayor a 60 años.');
+      return;
+    }
     //Validacion de datos 
     if (!/^[a-zA-Z\s]+$/.test(nombre)) {
       alert('El nombre solo puede contener letras.');
@@ -206,6 +247,18 @@ export default class Empleado extends React.Component {
 
   
   render() {
+    const opcionesCargo = [
+      { label: 'Seleccionar Cargo', value: '' },
+      { label: 'Almacenista', value: 'Almacenista' },
+      { label: 'Recepcionista de mercancía', value: 'Recepcionista de mercancía' },
+      { label: 'Supervisor de calidad', value: 'Supervisor de calidad' },
+      { label: 'Técnico de mantenimiento', value: 'Técnico de mantenimiento' },
+      { label: 'Coordinador de logística', value: 'Coordinador de logística' },
+      { label: 'Jefe de bodega', value: 'Jefe de bodega' },
+      { label: 'Operario de montacargas', value: 'Operario de montacargas' },
+      { label: 'Empacador', value: 'Empacador' },
+    ];
+    
     return (
       <View style={styles.container}>
         <View style={styles.buttonContainer}>
@@ -314,20 +367,15 @@ export default class Empleado extends React.Component {
               onChangeText={documento => this.setState({ documento })}
               style={styles.input}
             />
+            
             <TextInput
-              placeholder="Cargo"
-              value={this.state.cargo}
-              onChangeText={cargo => this.setState({ cargo })}
-              style={styles.input}
-            />
-            <TextInput
-              placeholder="Fecha Inicio"
+              placeholder="Fecha Inicio (DD/MM/AAAA)"
               value={this.state.fechaInicio}
               onChangeText={fechaInicio => this.setState({ fechaInicio })}
               style={styles.input}
             />
             <TextInput
-              placeholder="Fecha Fin"
+              placeholder="Fecha Fin (DD/MM/AAAA)"
               value={this.state.fechaFin}
               onChangeText={fechaFin => this.setState({ fechaFin })}
               style={styles.input}
@@ -338,14 +386,29 @@ export default class Empleado extends React.Component {
               onChangeText={sueldo => this.setState({ sueldo })}
               style={styles.input}
             />
-            <TextInput
-              placeholder="Bodega ID"
-              value={this.state.bodegaId}
-              onChangeText={bodegaId => this.setState({ bodegaId })}
-              style={styles.input}
-            />
-             {/* Fin de los campos de entrada de texto */}
             
+             {/* Fin de los campos de entrada de texto */}
+             <Picker
+                selectedValue={this.state.bodegaId}
+                style={styles.input}
+                onValueChange={(itemValue, itemIndex) =>
+                  this.setState({ bodegaId: itemValue })
+                }>
+                <Picker.Item label="Seleccionar Bodega" value="" />
+                {this.state.bodegas.map((bodega, index) => (
+                  <Picker.Item key={index} label={bodega.nombre} value={bodega.bodegaId} />
+                ))}
+              </Picker>
+             <Picker
+                selectedValue={this.state.cargo}
+                style={styles.input}
+                onValueChange={(itemValue, itemIndex) =>
+                  this.setState({ cargo: itemValue })
+                }>
+                {opcionesCargo.map((cargo, index) => (
+                  <Picker.Item key={index} label={cargo.label} value={cargo.value} />
+                ))}
+              </Picker>
             {/* Botones de guardar y cerrar el modal */}
             <TouchableOpacity onPress={this.handleSave} style={styles.button}>
               <Text style={styles.buttonText}>Guardar</Text>
