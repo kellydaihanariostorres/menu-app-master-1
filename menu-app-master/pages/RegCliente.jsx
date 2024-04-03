@@ -1,15 +1,139 @@
 import React from 'react';
 import { StyleSheet, Text, View, FlatList, TextInput, TouchableOpacity, Modal } from 'react-native';
+import { Picker } from 'react-native';
+import moment from 'moment';
+import axios from 'axios';
+
+// Aquí va el bloque de código corregido para AsyncStorage
+let AsyncStorage;
+if (typeof window !== 'undefined') {
+  AsyncStorage = require('react-native').AsyncStorage;
+} else {
+  AsyncStorage = {
+    getItem: () => Promise.resolve(null),
+    setItem: () => Promise.resolve(null),
+    removeItem: () => Promise.resolve(null),
+  };
+}
+
+const apiUrl = 'https://localhost:7284/api/clientes';
 
 export default class Cliente extends React.Component {
   constructor(props) {
-    super(props);   
+    super(props);
 
     this.state = {
       loading: false,
       clientes: [],
       filteredClientes: [],
       modalVisible: false,
+      clienteId: '',
+      nombre: '',
+      apellido: '',
+      edad: '',
+      tipoDocumento: '',
+      numDocumento: '',
+      correo: '',
+      estado: 'Activo', // Por defecto debe estar activo
+      editingClienteId: null,
+      isEditing: false,
+    };
+  }
+
+  componentDidMount() {
+    this.retrieveData();
+  }
+
+  retrieveData = async () => {
+    try {
+      const clientes = await AsyncStorage.getItem('clientes');
+
+      if (clientes !== null) {
+        this.setState({
+          clientes: JSON.parse(clientes),
+          filteredClientes: JSON.parse(clientes),
+        });
+      } else {
+        this.getClientes();
+      }
+    } catch (error) {
+      console.error('Error al recuperar datos de la memoria caché:', error);
+      this.getClientes();
+    }
+  };
+
+  getClientes = () => {
+    this.setState({ loading: true });
+  
+    fetch(apiUrl, {
+      method: 'GET',
+      headers: {
+        'Cache-Control': 'no-cache',
+        'Content-Type': 'application/json',
+      },
+    })
+      .then(res => res.json())
+      .then(data => {
+        const filteredClientes = data.filter(
+          cliente => cliente.estado === 'Activo'
+        );
+        this.setState({
+          clientes: data,
+          filteredClientes: filteredClientes,
+          loading: false
+        });
+        AsyncStorage.setItem('clientes', JSON.stringify(data));
+      })
+      .catch(error => {
+        console.error('Error fetching data:', error);
+        this.setState({ loading: false });
+      });
+  };
+  
+
+  handleSearch = text => {
+    const { clientes } = this.state;
+  
+    const filteredClientes = clientes.filter(cliente => {
+      return (
+        cliente.nombre.toLowerCase().includes(text.toLowerCase()) ||
+        cliente.numDocumento.toString().toLowerCase().includes(text.toLowerCase())
+      );
+    });
+  
+    this.setState({ filteredClientes });
+  };
+
+  handleEdit = clienteId => {
+    const cliente = this.state.clientes.find(cliente => cliente.clienteId === clienteId);
+    this.setState({
+      nombre: cliente.nombre,
+      apellido: cliente.apellido,
+      edad: cliente.edad,
+      tipoDocumento: cliente.tipoDocumento,
+      numDocumento: cliente.numDocumento,
+      correo: cliente.correo,
+      editingClienteId: clienteId,
+      modalVisible: true,
+      isEditing: true,
+    });
+  };
+  
+  handleDelete = async (clienteId, nombre, apellido, edad, tipoDocumento, numDocumento, correo) => {
+    try {
+      const parametros = { nombre, apellido, edad, tipoDocumento, numDocumento, correo, estado: 'Desactivado' };
+      await axios.put(`${apiUrl}/${clienteId}`, parametros);
+      alert(`Cliente ${nombre} desactivado exitosamente`);
+      this.getClientes();
+    } catch (error) {
+      alert('Error al desactivar al cliente');
+      console.error(error);
+    }
+  };
+
+  handleAdd = () => {
+    this.setState({
+      modalVisible: true,
       nombre: '',
       apellido: '',
       edad: '',
@@ -18,201 +142,121 @@ export default class Cliente extends React.Component {
       correo: '',
       editingClienteId: null,
       isEditing: false,
-    };
-  }
-
-  componentDidMount() {
-    this.getClientes();
-  }
-
-  getClientes = () => {
-    this.setState({ loading: true });
-    fetch('https://localhost:7284/api/clientes', {
-      method: 'GET', // Método GET
-      headers: {
-        'Cache-Control': 'no-cache', // Encabezado Cache-Control: no-cache
-        'Content-Type': 'application/json',
-      },
-    })
-      .then(res => res.json())
-      .then(data => {
-        this.setState({
-          clientes: data,
-          filteredClientes: data,
-          loading: false
-        });
-      })
-      .catch(error => {
-        console.error('Error fetching data:', error);
-        this.setState({ loading: false });
-      });
-  };
-
-  handleSearch = text => {
-    const filteredClientes = this.state.clientes.filter(cliente => {
-      return cliente.nombre.toLowerCase().includes(text.toLowerCase());
-    });
-    this.setState({ filteredClientes });
-  };
-
-  handleDelete = async (clienteId) => {
-    try {
-      const response = await fetch(`https://localhost:7284/api/clientes/${clienteId}`, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-          'Cache-Control': 'no-cache',
-        },
-      });
-  
-      if (!response.ok) {
-        throw new Error('La respuesta de la red no estuvo bien');
-      }
-  
-      // Filtrar los clientes para excluir al cliente eliminado
-      const updatedClientes = this.state.clientes.filter(cliente => cliente.clienteId !== clienteId);
-      this.setState({
-        clientes: updatedClientes,
-        filteredClientes: updatedClientes,
-      });
-  
-      console.log('Cliente eliminado correctamente');
-    } catch (error) {
-      console.error('Error al eliminar el cliente:', error);
-      alert('Error al eliminar el cliente. Por favor, inténtalo de nuevo.');
-    }
-  };
-
-  handleEdit = clienteId => {
-    const cliente = this.state.clientes.find(cliente => cliente.clienteId === clienteId);
-    this.setState({
-      nombre: cliente.nombre,
-      apellido: cliente.apellido,
-      edad: String(cliente.edad),
-      tipoDocumento: cliente.tipoDocumento,
-      numDocumento: String(cliente.numDocumento),
-      correo: cliente.correo,
-      editingClienteId: clienteId,
-      modalVisible: true,
-      isEditing: true,
     });
   };
-
 
   handleSave = async () => {
-    const { nombre, apellido, edad, tipoDocumento, numDocumento, correo, editingClienteId } = this.state;
-    const data = { 
+    const {
       nombre,
       apellido,
-      edad: parseInt(edad),
+      edad,
       tipoDocumento,
-      numDocumento: parseInt(numDocumento),
-      correo
+      numDocumento,
+      correo,
+      editingClienteId,
+      isEditing,
+      clientes,
+      filteredClientes
+    } = this.state;
+  
+    // Verificar si alguno de los campos está vacío
+    if (!nombre || !apellido || !edad || !tipoDocumento || !numDocumento || !correo) {
+      alert('Por favor, completa todos los campos.');
+      return;
+    }
+  
+    const data = {
+      nombre,
+      apellido,
+      edad,
+      tipoDocumento,
+      numDocumento,
+      correo,
+      estado: 'Activo',
     };
   
-    // Validaciones de datos
-    if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/.test(nombre)) {
-      alert('El nombre solo puede contener letras.');
-      return;
-    }
-    if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/.test(apellido)) {
-      alert('El apellido solo puede contener letras.');
-      return;
-    }
-    if (tipoDocumento !== 'CC' && tipoDocumento !== 'CE') {
-      alert('El tipo de documento solo puede ser CC o CE.');
-      return;
-    }
-    if (!/^\d{7,10}$/.test(numDocumento)) {
-      alert('El número de documento debe contener entre 7 y 10 dígitos.');
-      return;
-    }
-    if (!/^\d+$/.test(edad) || parseInt(edad) < 18 || parseInt(edad) > 100) {
-      alert('La edad debe ser un número entero mayor o igual a 18 y menor a 100');
-      return;
-    }
-    if (!correo.endsWith('@gmail.com')) {
-      alert('El correo debe terminar en @gmail.com.');
-      return;
-    }
-  
-    const url = editingClienteId ? `https://localhost:7284/api/clientes/${editingClienteId}` : 'https://localhost:7284/api/clientes';
-    const method = editingClienteId ? 'PUT' : 'POST';
-  
     try {
-      // Realiza la solicitud para guardar los cambios
-      const response = await fetch(url, {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-          'Cache-Control': 'no-cache',
-        },
-        body: JSON.stringify(data),
-      });
-    
-      if (!response.ok) {
-        throw new Error('La respuesta de la red no estuvo bien');
-      }
-    
-      let responseData; 
-    
-      if (response.status === 204) {
-        console.log('No hay contenido para devolver');
-      } else {
-        responseData = await response.json(); // Asigna el valor de responseData
-        console.log('Response:', responseData);
-      }
-    
-      // Si estás guardando un nuevo cliente, agrega el nuevo cliente a la lista actual
-      // Si estás editando un cliente existente, actualiza los datos del cliente en la lista
-      if (editingClienteId) {
-        // Actualiza los datos del cliente en la lista
-        const updatedClientes = this.state.clientes.map(cliente => {
-          if (cliente.clienteId === editingClienteId) {
-            return { ...cliente, ...data };
-          }
-          return cliente;
-        });
-        this.setState({
-          clientes: updatedClientes,
-          filteredClientes: updatedClientes, // Actualiza también los clientes filtrados
-        });
-      } else {
-        // Agrega el nuevo cliente a la lista
-        const newCliente = { clienteId: responseData.clienteId, ...data };
-        this.setState(prevState => ({
-          clientes: [...prevState.clientes, newCliente],
-          filteredClientes: [...prevState.clientes, newCliente], // Actualiza también los clientes filtrados
-        }));
-      }
-    
-      // Limpia el estado y cierra el modal
-      this.setState({
-        modalVisible: false,
-        nombre: '',
-        apellido: '',
-        edad: '',
-        tipoDocumento: '',
-        numDocumento: '',
-        correo: '',
-        editingClienteId: null,
-        isEditing: false,
-        successMessage: 'Los cambios se han guardado correctamente',
-      });
-    
-    } catch (error) {
-      console.error('Error al guardar los cambios:', error);
-      alert('Error al guardar los cambios. Por favor, inténtalo de nuevo.');
-    } 
-  };
+      let response;
+      if (isEditing) {
+        // Si estamos editando, hacemos una solicitud PUT
+        response = await axios.put(`${apiUrl}/${editingClienteId}`, data);
+        if (response.status >= 200 && response.status < 300) {
+          // Si la respuesta fue exitosa, actualizamos el estado local con los datos editados
+          const updatedClientes = clientes.map(cliente => {
+            if (cliente.clienteId === editingClienteId) {
+              return {
+                ...cliente,
+                ...data
+              };
+            }
+            return cliente;
+          });
   
+          // Actualizar también filteredClientes si es necesario
+          const updatedFilteredClientes = filteredClientes.map(cliente => {
+            if (cliente.clienteId === editingClienteId) {
+              return {
+                ...cliente,
+                ...data
+              };
+            }
+            return cliente;
+          });
+  
+          this.setState({
+            clientes: updatedClientes,
+            filteredClientes: updatedFilteredClientes,
+            modalVisible: false,
+            nombre: '',
+            apellido: '',
+            edad: '',
+            tipoDocumento: '',
+            numDocumento: '',
+            correo: '',
+            editingClienteId: null,
+            isEditing: false,
+          });
+          alert('Los datos se han guardado correctamente.');
+        } else {
+          // Si la respuesta del servidor indica un error, mostramos un mensaje apropiado
+          alert('Error al guardar cambios: ' + response.statusText);
+        }
+      } else {
+        // Si no, hacemos una solicitud POST para agregar un nuevo cliente
+        response = await axios.post(apiUrl, data);
+        if (response.status >= 200 && response.status < 300) {
+          const nuevoCliente = response.data;
+          this.setState(prevState => ({
+            clientes: [...prevState.clientes, nuevoCliente],
+            filteredClientes: [...prevState.filteredClientes, nuevoCliente],
+            modalVisible: false,
+            nombre: '',
+            apellido: '',
+            edad: '',
+            tipoDocumento: '',
+            numDocumento: '',
+            correo: '',
+            isEditing: false,
+          }));
+          alert('Cliente agregado correctamente.');
+        } else {
+          alert('Error al agregar cliente: ' + response.statusText);
+        }
+      }
+    } catch (error) {
+      // Manejo de errores
+      console.error('Error saving changes:', error);
+      alert('Error al guardar cambios: ' + error.message); // Mostramos el mensaje de error recibido
+    }
+  };
+
   
   render() {
     return (
       <View style={styles.container}>
         <View style={styles.buttonContainer}>
           <TouchableOpacity
-            onPress={() => this.setState({ modalVisible: true })}
+            onPress={this.handleAdd}
             style={{
               backgroundColor: '#440000',
               padding: 10,
@@ -221,78 +265,74 @@ export default class Cliente extends React.Component {
             }}
           >
             <Text style={{ color: 'white' }}>Agregar</Text>
-          </TouchableOpacity> 
-
-          {/* Agregar un View para crear un espacio */}
+          </TouchableOpacity>
           <View style={{ width: 10 }} />
-
           <TextInput
             style={styles.searchInput}
             placeholder="Buscar cliente"
             onChangeText={this.handleSearch}
           />
-          
         </View>
-          <View>
-            <View style={styles.row}>
-              <Text style={[styles.tableHeader, { flex: 0.5, backgroundColor: '#440000' }]}>#</Text>
-              <Text style={[styles.tableHeader, { flex: 1, backgroundColor: '#440000' }]}>NOMBRE</Text>
-              <Text style={[styles.tableHeader, { flex: 1, backgroundColor: '#440000' }]}>APELLIDO</Text>
-              <Text style={[styles.tableHeader, { flex: 0.5, backgroundColor: '#440000' }]}>EDAD</Text>
-              <Text style={[styles.tableHeader, { flex: 1.5, backgroundColor: '#440000' }]}>TIPO DE DOCUMENTO</Text>
-              <Text style={[styles.tableHeader, { flex: 1.5, backgroundColor: '#440000' }]}>NÚMERO DE DOCUMENTO</Text>
-              <Text style={[styles.tableHeader, { flex: 2, backgroundColor: '#440000' }]}>CORREO</Text>
-              <View style={[styles.tableHeader, { flex: 1, backgroundColor: '#440000' }]}></View>
-            </View>
-            <FlatList
-              contentContainerStyle={styles.tableGroupDivider}
-              data={this.state.filteredClientes}
-              renderItem={({ item, index }) => (
-                <TouchableOpacity onPress={() => this.handleEdit(item.clienteId)}>
-                  <View style={styles.row}>
-                    <Text style={[styles.item, { flex: 0.5 }]}>{index + 1}</Text>
-                    <Text style={[styles.item, { flex: 1 }]}>{item.nombre}</Text>
-                    <Text style={[styles.item, { flex: 1 }]}>{item.apellido}</Text>
-                    <Text style={[styles.item, { flex: 0.5 }]}>{item.edad}</Text>
-                    <Text style={[styles.item, { flex: 1.5 }]}>{item.tipoDocumento}</Text>
-                    <Text style={[styles.item, { flex: 1.5 }]}>{item.numDocumento}</Text>
-                    <Text style={[styles.item, { flex: 2 }]}>{item.correo}</Text>
-                    <View style={[styles.buttonGroup, { flex: 1 }]}>
-                      <TouchableOpacity onPress={() => this.handleEdit(item.clienteId)}>
-                        <Text style={[styles.button, styles.editButton]}>✎</Text>
-                      </TouchableOpacity>
-                      <TouchableOpacity onPress={() => this.handleDelete(item.clienteId)}>
-                        <Text style={[styles.button, styles.deleteButton]}>🗑</Text>
-                      </TouchableOpacity>
-                    </View>
+
+        <View>
+          <View style={styles.row}>
+            <Text style={[styles.tableHeader, { flex: 0.5, backgroundColor: '#440000' }]}>#</Text>
+            <Text style={[styles.tableHeader, { flex: 1, backgroundColor: '#440000' }]}>NOMBRE</Text>
+            <Text style={[styles.tableHeader, { flex: 1, backgroundColor: '#440000' }]}>APELLIDO</Text>
+            <Text style={[styles.tableHeader, { flex: 1, backgroundColor: '#440000' }]}>DOCUMENTO</Text>
+            <Text style={[styles.tableHeader, { flex: 1, backgroundColor: '#440000' }]}>CORREO</Text>
+            <Text style={[styles.tableHeader, { flex: 1, backgroundColor: '#440000' }]}>EDAD</Text>
+            <Text style={[styles.tableHeader, { flex: 1, backgroundColor: '#440000' }]}>TIPO DOCUMENTO</Text>
+            <View style={[styles.tableHeader, { flex: 1, backgroundColor: '#440000' }]}></View>
+          </View>
+          <FlatList
+            contentContainerStyle={styles.tableGroupDivider}
+            data={this.state.filteredClientes.filter(cliente => cliente.estado === 'Activo')}
+            renderItem={({ item, index }) => (
+              <TouchableOpacity onPress={() => this.handleEdit(item.clienteId)}>
+                <View style={styles.row}>
+                  <Text style={[styles.item, { flex: 0.5 }]}>{index + 1}</Text>
+                  <Text style={[styles.item, { flex: 1 }]}>{item.nombre}</Text>
+                  <Text style={[styles.item, { flex: 1 }]}>{item.apellido}</Text>
+                  <Text style={[styles.item, { flex: 1 }]}>{item.numDocumento}</Text>
+                  <Text style={[styles.item, { flex: 1 }]}>{item.correo}</Text>
+                  <Text style={[styles.item, { flex: 1 }]}>{item.edad}</Text>
+                  <Text style={[styles.item, { flex: 1 }]}>{item.tipoDocumento}</Text>
+                  <View style={[styles.buttonGroup, { flex: 1 }]}>
+                    <TouchableOpacity onPress={() => this.handleEdit(item.clienteId)}>
+                      <Text style={[styles.button, styles.editButton]}>✎</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={() => this.handleDelete(item.clienteId, item.nombre, item.apellido, item.edad, item.tipoDocumento, item.numDocumento, item.correo)}>
+                      <Text style={[styles.button, styles.deleteButton]}>🗑</Text>
+                    </TouchableOpacity>
                   </View>
-                </TouchableOpacity>
-              )}
-              keyExtractor={item => item.clienteId}
-            />
+                </View>
+              </TouchableOpacity>
+            )}
+            keyExtractor={item => item.clienteId.toString()}
+          />
         </View>
 
         <Modal
           visible={this.state.modalVisible}
           animationType="slide"
           onRequestClose={() => {
-            // Limpia el estado y cierra el modal
+            // Restablecer el estado del formulario al cerrar el modal sin guardar cambios
             this.setState({ 
-              modalVisible: false, 
-              nombre: '', 
-              apellido: '', 
-              edad: '', 
-              tipoDocumento: '', 
-              numDocumento: '', 
-              correo: '', 
-              editingClienteId: null, 
-              isEditing: false, 
-              successMessage: '', // Limpiar mensaje de éxito al cerrar el modal
+              modalVisible: false,
+              nombre: '',
+              apellido: '',
+              edad: '',
+              tipoDocumento: '',
+              numDocumento: '',
+              correo: '',
+              editingClienteId: null,
+              isEditing: false,
+              successMessage: '',
             });
           }}
         >
           <View style={styles.modalContainer}>
-            {/* Aquí es donde puedes encontrar los campos de entrada de texto para la edición */}
             <TextInput
               placeholder="Nombre"
               value={this.state.nombre}
@@ -310,20 +350,18 @@ export default class Cliente extends React.Component {
               value={this.state.edad}
               onChangeText={edad => this.setState({ edad })}
               style={styles.input}
-              keyboardType="numeric" // Teclado numérico para la edad
             />
             <TextInput
-              placeholder="Tipo de Documento"
+              placeholder="Tipo Documento"
               value={this.state.tipoDocumento}
               onChangeText={tipoDocumento => this.setState({ tipoDocumento })}
               style={styles.input}
             />
             <TextInput
-              placeholder="Número de Documento"
+              placeholder="Número Documento"
               value={this.state.numDocumento}
               onChangeText={numDocumento => this.setState({ numDocumento })}
               style={styles.input}
-              keyboardType="numeric" // Teclado numérico para el número de documento
             />
             <TextInput
               placeholder="Correo"
@@ -331,9 +369,6 @@ export default class Cliente extends React.Component {
               onChangeText={correo => this.setState({ correo })}
               style={styles.input}
             />
-            {/* Fin de los campos de entrada de texto */}
-            
-            {/* Botones de guardar y cerrar el modal */}
             <TouchableOpacity onPress={this.handleSave} style={styles.button}>
               <Text style={styles.buttonText}>Guardar</Text>
             </TouchableOpacity>
@@ -363,8 +398,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     flex: 1,
     paddingLeft: 10,
-    borderRadius: 10,
-    color: 'black',
+    borderRadius: '10px',
+    color :'black',
     backgroundColor: 'white',
     marginBottom: 10,
   },
@@ -385,10 +420,10 @@ const styles = StyleSheet.create({
     justifyContent: 'space-around',
   },
   button: {
-    backgroundColor: '#440000',
-    padding: 10,
-    borderRadius: 5,
-    marginVertical: 5,
+    padding: 5,
+    borderRadius: 5, // Ajuste: Cambiar a 5 para que sea ovalado
+    textAlign: 'center',
+    borderWidth: 1,
   },
   editButton: {
     backgroundColor: '#440000',
@@ -413,10 +448,17 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     paddingLeft: 10,
   },
+  buttont: {
+    backgroundColor: '#440000', // Color de fondo del botón
+    padding: 10, // Espaciado interno del botón
+    borderRadius: 50, // Bordes redondeados del botón
+    marginBottom: 10, // Espaciado inferior del botón
+    width: '40%', // Ancho del botón
+    alignItems: 'center', // Alinear contenido del botón al centro
+  },
   buttonText: {
-    color: 'white',
-    fontWeight: 'bold',
-    textAlign: 'center',
+    color: 'white', // Color del texto del botón
+    fontWeight: 'bold', // Negrita del texto del botón
   },
   tableHeader: {
     flex: 1,

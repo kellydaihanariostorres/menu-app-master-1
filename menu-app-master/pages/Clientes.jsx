@@ -131,20 +131,6 @@ export default class Cliente extends React.Component {
     }
   };
 
-  handleAdd = () => {
-    this.setState({
-      modalVisible: true,
-      nombre: '',
-      apellido: '',
-      edad: '',
-      tipoDocumento: '',
-      numDocumento: '',
-      correo: '',
-      editingClienteId: null,
-      isEditing: false,
-    });
-  };
-
   handleSave = async () => {
     const {
       nombre,
@@ -255,18 +241,7 @@ export default class Cliente extends React.Component {
     return (
       <View style={styles.container}>
         <View style={styles.buttonContainer}>
-          <TouchableOpacity
-            onPress={this.handleAdd}
-            style={{
-              backgroundColor: '#440000',
-              padding: 10,
-              borderRadius: 50,
-              marginBottom: 10,
-            }}
-          >
-            <Text style={{ color: 'white' }}>Agregar</Text>
-          </TouchableOpacity>
-          <View style={{ width: 10 }} />
+          {/* Aquí estaba el botón Agregar */}
           <TextInput
             style={styles.searchInput}
             placeholder="Buscar cliente"
@@ -385,77 +360,88 @@ export default class Cliente extends React.Component {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'flex-start', // Cambia de 'center' a 'flex-start'
-    padding: 80,
-    paddingTop: 50, // Añade un padding superior para hacer espacio para la barra de búsqueda
+    backgroundColor: '#a9a9a9',
   },
   buttonContainer: {
     flexDirection: 'row',
-    marginBottom: 10,
-    marginTop: 10, // Añade un margen superior para separar los botones de la barra de búsqueda
+    justifyContent: 'space-between',
+    margin: 10,
   },
   searchInput: {
-    flex: 1,
-    borderColor: '#ccc',
+    height: 40,
+    borderColor: '#440000',
     borderWidth: 1,
-    borderRadius: 5,
-    padding: 10,
+    flex: 1,
+    paddingLeft: 10,
+    borderRadius: '10px',
+    color :'black',
+    backgroundColor: 'white',
+    marginBottom: 10,
   },
   row: {
     flexDirection: 'row',
+    justifyContent: 'space-between',
     borderBottomWidth: 1,
-    borderBottomColor: '#ccc',
+    borderBottomColor: 'gray',
     paddingVertical: 10,
-    alignItems: 'center',
-  },
-  tableHeader: {
-    fontWeight: 'bold',
-    textAlign: 'center',
-    color: 'white',
-    padding: 10,
+    marginHorizontal: 10,
   },
   item: {
+    flex: 1,
     textAlign: 'center',
-    padding: 10,
   },
   buttonGroup: {
     flexDirection: 'row',
-    justifyContent: 'flex-end',
+    justifyContent: 'space-around',
   },
   button: {
     padding: 5,
-    marginHorizontal: 5,
-    borderRadius: 5,
+    borderRadius: 5, // Ajuste: Cambiar a 5 para que sea ovalado
+    textAlign: 'center',
+    borderWidth: 1,
   },
   editButton: {
-    backgroundColor: '#3498db',
+    backgroundColor: '#440000',
+    color: 'white',
   },
   deleteButton: {
-    backgroundColor: '#e74c3c',
+    backgroundColor: '#440000',
+    color: 'white',
   },
   modalContainer: {
     flex: 1,
-    justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    backgroundColor: 'white',
     padding: 20,
   },
   input: {
-    width: '100%',
-    backgroundColor: '#fff',
-    borderColor: '#ccc',
+    height: 40,
+    width: '80%',
+    borderColor: 'gray',
     borderWidth: 1,
-    borderRadius: 5,
-    paddingHorizontal: 10,
     marginBottom: 10,
+    paddingLeft: 10,
   },
-  saveButton: {
-    backgroundColor: '#440000',
-    padding: 10,
-    borderRadius: 5,
-    marginTop: 10,
-    width: '100%',
+  buttont: {
+    backgroundColor: '#440000', // Color de fondo del botón
+    padding: 10, // Espaciado interno del botón
+    borderRadius: 50, // Bordes redondeados del botón
+    marginBottom: 10, // Espaciado inferior del botón
+    width: '40%', // Ancho del botón
+    alignItems: 'center', // Alinear contenido del botón al centro
+  },
+  buttonText: {
+    color: 'white', // Color del texto del botón
+    fontWeight: 'bold', // Negrita del texto del botón
+  },
+  tableHeader: {
+    flex: 1,
+    textAlign: 'center',
+    color: 'white',
+    paddingVertical: 5,
+  },
+  tableGroupDivider: {
+    backgroundColor: '#dcdcdc',
   },
 });

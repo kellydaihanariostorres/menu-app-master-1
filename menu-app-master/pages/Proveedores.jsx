@@ -1,5 +1,8 @@
 import React from 'react';
 import { StyleSheet, Text, View, FlatList, TextInput, TouchableOpacity, Modal } from 'react-native';
+import axios from 'axios';
+
+const apiUrl = 'https://localhost:7284/api/proveedor';
 
 export default class Proveedor extends React.Component {
   constructor(props) {
@@ -29,18 +32,22 @@ export default class Proveedor extends React.Component {
 
   getProveedores = () => {
     this.setState({ loading: true });
-    fetch('https://localhost:7284/api/proveedor', {
-      method: 'GET', // Método GET
+
+    fetch(apiUrl, {
+      method: 'GET',
       headers: {
-        'Cache-Control': 'no-cache', // Encabezado Cache-Control: no-cache
+        'Cache-Control': 'no-cache',
         'Content-Type': 'application/json',
       },
     })
       .then(res => res.json())
       .then(data => {
+        const filteredProveedores = data.filter(
+          proveedor => proveedor.estado === 'Activo'
+        );
         this.setState({
-          bodegas: data,
-          filteredProveedores: data,
+          proveedores: data,
+          filteredProveedores: filteredProveedores,
           loading: false
         });
       })
@@ -51,65 +58,85 @@ export default class Proveedor extends React.Component {
   };
 
   handleSearch = text => {
-    const filteredProveedores = this.state.proveedores.filter(proveedor => {
-      if (proveedor && proveedor.nombre) {
-        return proveedor.nombre.toLowerCase().includes(text.toLowerCase());
-      }
-      return false;
+    const { proveedores } = this.state;
+
+    const filteredProveedores = proveedores.filter(proveedor => {
+      return (
+        proveedor.nombre.toLowerCase().includes(text.toLowerCase()) ||
+        proveedor.numDocumento.toString().toLowerCase().includes(text.toLowerCase())
+      );
     });
+
     this.setState({ filteredProveedores });
   };
-  
 
-  handleDelete = async (proveedorId) => {
-    try {
-      const response = await fetch(`https://localhost:7284/api/proveedor/${proveedorId}`, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-          'Cache-Control': 'no-cache',
-        },
-      });
-  
-      if (!response.ok) {
-        throw new Error('La respuesta de la red no estuvo bien');
-      }
-  
-      // Filtrar los proveedores para excluir al proveedor eliminado
-      const updatedProveedores = this.state.proveedores.filter(proveedor => proveedor.proveedorId !== proveedorId);
-      this.setState({
-        proveedores: updatedProveedores,
-        filteredProveedores: updatedProveedores,
-      });
-  
-      console.log('Proveedor eliminado correctamente');
-    } catch (error) {
-      console.error('Error al eliminar el proveedor:', error);
-      alert('Error al eliminar el proveedor. Por favor, inténtalo de nuevo.');
-    }
-  };
-
-  
   handleEdit = proveedorId => {
-    const proveedor = this.state.proveedores.find(proveedor => proveedor.proveedorId === clienteId);
+    const proveedor = this.state.proveedores.find(proveedor => proveedor.idProveedor === proveedorId);
     this.setState({
       nombre: proveedor.nombre,
-      numDocumento: String(proveedor.numDocumento),
-      edad: String(proveedor.edad),
-      direccion: proveedor.direccion, 
+      numDocumento: proveedor.numDocumento.toString(),
+      edad: proveedor.edad.toString(),
+      direccion: proveedor.direccion,
       telefono: proveedor.telefono,
       correo: proveedor.correo,
       nombreEntidadBancaria: proveedor.nombreEntidadBancaria,
-      numeroCuentaBancaria: String(proveedor.numeroCuentaBancaria),
+      numeroCuentaBancaria: proveedor.numeroCuentaBancaria.toString(),
       editingProveedorId: proveedorId,
       modalVisible: true,
       isEditing: true,
     });
   };
 
+  handleDelete = async (proveedorId, nombre, numDocumento, edad, direccion, telefono, correo, nombreEntidadBancaria, numeroCuentaBancaria) => {
+    try {
+      const parametros = { nombre, numDocumento, edad, direccion, telefono, correo, nombreEntidadBancaria, numeroCuentaBancaria, estado: 'Desactivado' };
+      await axios.put(`${apiUrl}/${proveedorId}`, parametros);
+      alert(`Proveedor ${nombre} desactivado exitosamente`);
+      this.getProveedores();
+    } catch (error) {
+      alert('Error al desactivar al proveedor');
+      console.error(error);
+    }
+  };
+
+  handleAdd = () => {
+    this.setState({
+      modalVisible: true,
+      nombre: '',
+      numDocumento: '',
+      edad: '',
+      direccion: '',
+      telefono: '',
+      correo: '',
+      nombreEntidadBancaria: '',
+      numeroCuentaBancaria: '',
+      editingProveedorId: null,
+      isEditing: false,
+    });
+  };
 
   handleSave = async () => {
-    const { nombre, numDocumento, edad, direccion, telefono, correo, nombreEntidadBancaria, numeroCuentaBancaria, editingProveedorId } = this.state;  
+    const {
+      nombre,
+      numDocumento,
+      edad,
+      direccion,
+      telefono,
+      correo,
+      nombreEntidadBancaria,
+      numeroCuentaBancaria,
+      editingProveedorId,
+      isEditing,
+      proveedores,
+      filteredProveedores
+    } = this.state;
+
+    // Verificar si alguno de los campos está vacío
+    if (!nombre || !numDocumento || !edad || !direccion || !telefono || !correo || !nombreEntidadBancaria || !numeroCuentaBancaria) {
+      alert('Por favor, completa todos los campos.');
+      return;
+    }
+
     const data = {
       nombre,
       numDocumento: parseInt(numDocumento),
@@ -118,89 +145,95 @@ export default class Proveedor extends React.Component {
       telefono,
       correo,
       nombreEntidadBancaria,
-      numeroCuentaBancaria: parseInt(numeroCuentaBancaria)
+      numeroCuentaBancaria: parseInt(numeroCuentaBancaria),
+      estado: 'Activo',
     };
 
-    //validacion de datos
-  
-    const url = editingProveedorId ? `https://localhost:7284/api/proveedor/${editingProveedorId}` : 'https://localhost:7284/api/proveedor';
-    const method = editingProveedorId ? 'PUT' : 'POST';
-  
     try {
-      // Realiza la solicitud para guardar los cambios
-      const response = await fetch(url, {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-          'Cache-Control': 'no-cache',
-        },
-        body: JSON.stringify(data),
-      });
-  
-      if (!response.ok) {
-        throw new Error('La respuesta de la red no estuvo bien');
-      }
-  
-      let responseData;
-  
-      if (response.status === 204) {
-        console.log('No hay contenido para devolver');
+      let response;
+      if (isEditing) {
+        // Si estamos editando, hacemos una solicitud PUT
+        response = await axios.put(`${apiUrl}/${editingProveedorId}`, data);
+        if (response.status >= 200 && response.status < 300) {
+          // Si la respuesta fue exitosa, actualizamos el estado local con los datos editados
+          const updatedProveedores = proveedores.map(proveedor => {
+            if (proveedor.idProveedor === editingProveedorId) {
+              return {
+                ...proveedor,
+                ...data
+              };
+            }
+            return proveedor;
+          });
+
+          // Actualizar también filteredProveedores si es necesario
+          const updatedFilteredProveedores = filteredProveedores.map(proveedor => {
+            if (proveedor.idProveedor === editingProveedorId) {
+              return {
+                ...proveedor,
+                ...data
+              };
+            }
+            return proveedor;
+          });
+
+          this.setState({
+            proveedores: updatedProveedores,
+            filteredProveedores: updatedFilteredProveedores,
+            modalVisible: false,
+            nombre: '',
+            numDocumento: '',
+            edad: '',
+            direccion: '',
+            telefono: '',
+            correo: '',
+            nombreEntidadBancaria: '',
+            numeroCuentaBancaria: '',
+            editingProveedorId: null,
+            isEditing: false,
+          });
+          alert('Los datos se han guardado correctamente.');
+        } else {
+          // Si la respuesta del servidor indica un error, mostramos un mensaje apropiado
+          alert('Error al guardar cambios: ' + response.statusText);
+        }
       } else {
-        responseData = await response.json(); // Asigna el valor de responseData
-        console.log('Response:', responseData);
+        // Si no, hacemos una solicitud POST para agregar un nuevo proveedor
+        response = await axios.post(apiUrl, data);
+        if (response.status >= 200 && response.status < 300) {
+          const nuevoProveedor = response.data;
+          this.setState(prevState => ({
+            proveedores: [...prevState.proveedores, nuevoProveedor],
+            filteredProveedores: [...prevState.filteredProveedores, nuevoProveedor],
+            modalVisible: false,
+            nombre: '',
+            numDocumento: '',
+            edad: '',
+            direccion: '',
+            telefono: '',
+            correo: '',
+            nombreEntidadBancaria: '',
+            numeroCuentaBancaria: '',
+            isEditing: false,
+          }));
+          alert('Proveedor agregado correctamente.');
+        } else {
+          alert('Error al agregar proveedor: ' + response.statusText);
+        }
       }
-  
-      if (editingProveedorId) {
-        // Actualiza los datos del proveedor en la lista
-        const updatedProveedores = proveedores.map(proveedor => {
-          if (proveedor.proveedorId === editingProveedorId) {
-            return { ...proveedor, ...data };
-          }
-          return proveedor;
-        });
-        this.setState({
-          proveedores: updatedProveedores,
-          filteredProveedores: updatedProveedores, // Actualiza también los proveedores filtrados
-        });
-      } else {
-        // Agrega el nuevo Proveedor a la lista
-        const newProveedor = { proveedorId: responseData.proveedorId, ...data };
-        this.setState(prevState => ({
-          proveedores: [...prevState.proveedores, newProveedor], // Agrega el nuevo proveedor a la lista existente
-          filteredProveedores: [...prevState.proveedores, newProveedor], // Actualiza también los Proveedores filtrados
-        }));
-      }
-  
-      // Limpia el estado y cierra el modal 
-      this.setState({
-        modalVisible: false,
-        nombre: '',
-        numDocumento: '',
-        edad: '',
-        direccion: '',
-        telefono: '',
-        correo: '',
-        nombreEntidadBancaria: '',
-        numeroCuentaBancaria: '',
-        editingProveedorId: null,
-        isEditing: false,
-        successMessage: 'Los cambios se han guardado correctamente',
-      });
-  
     } catch (error) {
-      console.error('Error al guardar los cambios:', error);
-      alert('Error al guardar los cambios. Por favor, inténtalo de nuevo.');
+      // Manejo de errores
+      console.error('Error saving changes:', error);
+      alert('Error al guardar cambios: ' + error.message); // Mostramos el mensaje de error recibido
     }
   };
-  
-  
 
   render() {
     return (
       <View style={styles.container}>
         <View style={styles.buttonContainer}>
-        <TouchableOpacity
-            onPress={() => this.setState({ modalVisible: true })}
+          <TouchableOpacity
+            onPress={this.handleAdd}
             style={{
               backgroundColor: '#440000',
               padding: 10,
@@ -210,136 +243,131 @@ export default class Proveedor extends React.Component {
           >
             <Text style={{ color: 'white' }}>Agregar</Text>
           </TouchableOpacity>
-
-          {/* Agregar un View para crear un espacio */}
           <View style={{ width: 10 }} />
-
-
           <TextInput
             style={styles.searchInput}
             placeholder="Buscar proveedor"
             onChangeText={this.handleSearch}
           />
         </View>
-        
-        <View>
-            <View style={styles.row}>
-              <Text style={[styles.tableHeader, { flex: 0.5, backgroundColor: '#440000' }]}>#</Text>
-              <Text style={[styles.tableHeader, { flex: 1, backgroundColor: '#440000' }]}>NOMBRE</Text>
-              <Text style={[styles.tableHeader, { flex: 1, backgroundColor: '#440000' }]}>NÚM. DOCUMENTO</Text>
-              <Text style={[styles.tableHeader, { flex: 0.5, backgroundColor: '#440000' }]}>EDAD</Text>
-              <Text style={[styles.tableHeader, { flex: 0.5, backgroundColor: '#440000' }]}>DIRECCION</Text>
-              <Text style={[styles.tableHeader, { flex: 1.5, backgroundColor: '#440000' }]}>TÉLEFONO</Text>
-              <Text style={[styles.tableHeader, { flex: 1.5, backgroundColor: '#440000' }]}>CORREO</Text>
-              <Text style={[styles.tableHeader, { flex: 2, backgroundColor: '#440000' }]}>ENTIDAD BANCARIA</Text>
-              <Text style={[styles.tableHeader, { flex: 2, backgroundColor: '#440000' }]}>NÚM. CUENTA BANCARIA</Text>
-              <View style={[styles.tableHeader, { flex: 1, backgroundColor: '#440000' }]}></View>
-            </View>
-            <FlatList
-              contentContainerStyle={styles.tableGroupDivider}
-              data={this.state.filteredProveedores}
-              renderItem={({ item, index }) => (
-                <TouchableOpacity onPress={() => this.handleEdit(item.proveedorId)}>
-                  <View style={styles.row} key={item.proveedorId}>
-                    <Text style={[styles.item, { flex: 0.5 }]}>{index + 1}</Text>
-                    <Text style={[styles.item, { flex: 1 }]}>{item.nombre}</Text>
-                    <Text style={[styles.item, { flex: 1 }]}>{item.numDocumento}</Text>
-                    <Text style={[styles.item, { flex: 0.5 }]}>{item.edad}</Text>
-                    <Text style={[styles.item, { flex: 1.5 }]}>{item.direccion}</Text>
-                    <Text style={[styles.item, { flex: 1.5 }]}>{item.telefono}</Text>
-                    <Text style={[styles.item, { flex: 1.5 }]}>{item.correo}</Text>
-                    <Text style={[styles.item, { flex: 2 }]}>{item.nombreEntidadBancaria}</Text>
-                    <Text style={[styles.item, { flex: 2 }]}>{item.numeroCuentaBancaria}</Text>
-                    <View style={[styles.buttonGroup, { flex: 1 }]}>
-                      <TouchableOpacity onPress={() => this.handleEdit(item.proveedorId)}>
-                        <Text style={[styles.button, styles.editButton]}>✎</Text>
-                      </TouchableOpacity>
-                      <TouchableOpacity onPress={() => this.handleDelete(item.proveedorId)}>
-                        <Text style={[styles.button, styles.deleteButton]}>🗑</Text>
-                      </TouchableOpacity>
-                    </View>
-                  </View>
-                </TouchableOpacity>
-              )}
-              keyExtractor={(item, index) => item.proveedorId ? item.proveedorId.toString() : index.toString()}
 
-            />
+        <View>
+          <View style={styles.row}>
+            <Text style={[styles.tableHeader, { flex: 0.5, backgroundColor: '#440000' }]}>#</Text>
+            <Text style={[styles.tableHeader, { flex: 1, backgroundColor: '#440000' }]}>NOMBRE</Text>
+            <Text style={[styles.tableHeader, { flex: 1, backgroundColor: '#440000' }]}>NUM. DOCUMENTO</Text>
+            <Text style={[styles.tableHeader, { flex: 1, backgroundColor: '#440000' }]}>EDAD</Text>
+            <Text style={[styles.tableHeader, { flex: 1, backgroundColor: '#440000' }]}>DIRECCIÓN</Text>
+            <Text style={[styles.tableHeader, { flex: 1, backgroundColor: '#440000' }]}>TELÉFONO</Text>
+            <Text style={[styles.tableHeader, { flex: 1.5, backgroundColor: '#440000' }]}>CORREO</Text>
+            <Text style={[styles.tableHeader, { flex: 1.5, backgroundColor: '#440000' }]}>ENTIDAD BANCARIA</Text>
+            <Text style={[styles.tableHeader, { flex: 1, backgroundColor: '#440000' }]}>CUENTA BANCARIA</Text>
+            <View style={[styles.tableHeader, { flex: 1, backgroundColor: '#440000' }]}></View>
           </View>
-        
-          <Modal
-            visible={this.state.modalVisible}
-            animationType="slide"
-            onRequestClose={() => {
-              // Limpia el estado y cierra el modal
-              this.setState({ 
-                modalVisible: false, 
-                nombre: '',
-                numDocumento: '',
-                edad: '',
-                direccion: '',
-                telefono: '',
-                correo: '',
-                nombreEntidadBancaria: '',
-                numeroCuentaBancaria: '',
-                editingClienteId: null, 
-                isEditing: false, 
-                successMessage: '', // Limpiar mensaje de éxito al cerrar el modal
-              });
-            }}
-          >
+          <FlatList
+            contentContainerStyle={styles.tableGroupDivider}
+            data={this.state.filteredProveedores.filter(proveedor => proveedor.estado === 'Activo')}
+            renderItem={({ item, index }) => (
+              <TouchableOpacity onPress={() => this.handleEdit(item.idProveedor)}>
+                <View style={styles.row}>
+                  <Text style={[styles.item, { flex: 0.5 }]}>{index + 1}</Text>
+                  <Text style={[styles.item, { flex: 1 }]}>{item.nombre}</Text>
+                  <Text style={[styles.item, { flex: 1 }]}>{item.numDocumento}</Text>
+                  <Text style={[styles.item, { flex: 1 }]}>{item.edad}</Text>
+                  <Text style={[styles.item, { flex: 1 }]}>{item.direccion}</Text>
+                  <Text style={[styles.item, { flex: 1 }]}>{item.telefono}</Text>
+                  <Text style={[styles.item, { flex: 1.5 }]}>{item.correo}</Text>
+                  <Text style={[styles.item, { flex: 1.5 }]}>{item.nombreEntidadBancaria}</Text>
+                  <Text style={[styles.item, { flex: 1 }]}>{item.numeroCuentaBancaria}</Text>
+                  <View style={[styles.buttonGroup, { flex: 1 }]}>
+                    <TouchableOpacity onPress={() => this.handleEdit(item.idProveedor)}>
+                      <Text style={[styles.button, styles.editButton]}>✎</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={() => this.handleDelete(item.idProveedor, item.nombre, item.numDocumento, item.edad, item.direccion, item.telefono, item.correo, item.nombreEntidadBancaria, item.numeroCuentaBancaria)}>
+                      <Text style={[styles.button, styles.deleteButton]}>🗑</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              </TouchableOpacity>
+            )}
+            keyExtractor={item => item.idProveedor.toString()}
+          />
+        </View>
+
+        <Modal
+          visible={this.state.modalVisible}
+          animationType="slide"
+          onRequestClose={() => {
+            // Restablecer el estado del formulario al cerrar el modal sin guardar cambios
+            this.setState({ 
+              modalVisible: false,
+              nombre: '',
+              numDocumento: '',
+              edad: '',
+              direccion: '',
+              telefono: '',
+              correo: '',
+              nombreEntidadBancaria: '',
+              numeroCuentaBancaria: '',
+              editingProveedorId: null,
+              isEditing: false,
+              successMessage: '',
+            });
+          }}
+        >
           <View style={styles.modalContainer}>
-                <TextInput
-                  placeholder="Nombre"
-                  value={this.state.nombre}
-                  onChangeText={nombre => this.setState({ nombre })}
-                  style={styles.input}
-                />
-                <TextInput
-                  placeholder="Núm. Documento"
-                  value={this.state.numDocumento}
-                  onChangeText={numDocumento => this.setState({ numDocumento })}
-                  style={styles.input}
-                />
-                <TextInput
-                  placeholder="Edad"
-                  value={this.state.edad}
-                  onChangeText={edad => this.setState({ edad })}
-                  style={styles.input}
-                />
-                <TextInput
-                  placeholder="Direccion"
-                  value={this.state.direccion}
-                  onChangeText={direccion => this.setState({ direccion })}
-                  style={styles.input}
-                />
-                <TextInput
-                  placeholder="Teléfono"
-                  value={this.state.telefono}
-                  onChangeText={telefono => this.setState({ telefono })}
-                  style={styles.input}
-                />
-                <TextInput
-                  placeholder="Correo"
-                  value={this.state.correo}
-                  onChangeText={correo => this.setState({ correo })}
-                  style={styles.input}
-                />
-                <TextInput
-                  placeholder="Nombre Entidad Bancaria"
-                  value={this.state.nombreEntidadBancaria}
-                  onChangeText={nombreEntidadBancaria => this.setState({ nombreEntidadBancaria })}
-                  style={styles.input}
-                />
-                <TextInput
-                  placeholder="Número Cuenta Bancaria"
-                  value={this.state.numeroCuentaBancaria}
-                  onChangeText={numeroCuentaBancaria => this.setState({ numeroCuentaBancaria })}
-                  style={styles.input}
-                />
-            <TouchableOpacity onPress={this.handleSave} style={styles.buttont}>
+            <TextInput
+              placeholder="Nombre"
+              value={this.state.nombre}
+              onChangeText={nombre => this.setState({ nombre })}
+              style={styles.input}
+            />
+            <TextInput
+              placeholder="Número de Documento"
+              value={this.state.numDocumento}
+              onChangeText={numDocumento => this.setState({ numDocumento })}
+              style={styles.input}
+            />
+            <TextInput
+              placeholder="Edad"
+              value={this.state.edad}
+              onChangeText={edad => this.setState({ edad })}
+              style={styles.input}
+            />
+            <TextInput
+              placeholder="Dirección"
+              value={this.state.direccion}
+              onChangeText={direccion => this.setState({ direccion })}
+              style={styles.input}
+            />
+            <TextInput
+              placeholder="Teléfono"
+              value={this.state.telefono}
+              onChangeText={telefono => this.setState({ telefono })}
+              style={styles.input}
+            />
+            <TextInput
+              placeholder="Correo"
+              value={this.state.correo}
+              onChangeText={correo => this.setState({ correo })}
+              style={styles.input}
+            />
+            <TextInput
+              placeholder="Nombre Entidad Bancaria"
+              value={this.state.nombreEntidadBancaria}
+              onChangeText={nombreEntidadBancaria => this.setState({ nombreEntidadBancaria })}
+              style={styles.input}
+            />
+            <TextInput
+              placeholder="Número de Cuenta Bancaria"
+              value={this.state.numeroCuentaBancaria}
+              onChangeText={numeroCuentaBancaria => this.setState({ numeroCuentaBancaria })}
+              style={styles.input}
+            />
+            <TouchableOpacity onPress={this.handleSave} style={styles.button}>
               <Text style={styles.buttonText}>Guardar</Text>
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => this.setState({ modalVisible: false })} style={styles.buttont}>
+            <TouchableOpacity onPress={() => this.setState({ modalVisible: false })} style={styles.button}>
               <Text style={styles.buttonText}>Cerrar</Text>
             </TouchableOpacity>
           </View>
@@ -348,7 +376,6 @@ export default class Proveedor extends React.Component {
     );
   }
 }
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -365,7 +392,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     flex: 1,
     paddingLeft: 10,
-    borderRadius: 10,
+    borderRadius: '10px',
     color :'black',
     backgroundColor: 'white',
     marginBottom: 10,

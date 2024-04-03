@@ -1,5 +1,8 @@
 import React from 'react';
-import { StyleSheet, Text, View, FlatList, TextInput, Button, TouchableOpacity, Modal } from 'react-native';
+import { StyleSheet, Text, View, FlatList, TextInput, TouchableOpacity, Modal } from 'react-native';
+import axios from 'axios';
+
+const apiUrl = 'https://localhost:7284/api/bodegas';
 
 export default class Bodega extends React.Component {
   constructor(props) {
@@ -12,7 +15,6 @@ export default class Bodega extends React.Component {
       modalVisible: false,
       nombre: '',
       direccion: '',
-      estado: '',
       ciudad: '',
       editingBodegaId: null,
       isEditing: false,
@@ -25,10 +27,11 @@ export default class Bodega extends React.Component {
 
   getBodegas = () => {
     this.setState({ loading: true });
-    fetch('https://localhost:7284/api/bodegas',{
-      method: 'GET', // Método GET
+
+    fetch(apiUrl, {
+      method: 'GET',
       headers: {
-        'Cache-Control': 'no-cache', // Encabezado Cache-Control: no-cache
+        'Cache-Control': 'no-cache',
         'Content-Type': 'application/json',
       },
     })
@@ -47,154 +50,135 @@ export default class Bodega extends React.Component {
   };
 
   handleSearch = text => {
-    const filteredBodegas = this.state.bodegas.filter(bodega => {
-      return bodega.nombre.toLowerCase().includes(text.toLowerCase());
+    const { bodegas } = this.state;
+
+    const filteredBodegas = bodegas.filter(bodega => {
+      return (
+        bodega.nombre.toLowerCase().includes(text.toLowerCase()) ||
+        bodega.ciudad.toLowerCase().includes(text.toLowerCase())
+      );
     });
+
     this.setState({ filteredBodegas });
   };
-
-  handleDelete = async (bodegaId) => {
-    try {
-      const response = await fetch(`https://localhost:7284/api/bodegas/${bodegaId}`, { // Aquí cambiamos de bodegasId a bodegaId
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-          'Cache-Control': 'no-cache',
-        },
-      });
-  
-      if (!response.ok) {
-        throw new Error('La respuesta de la red no estuvo bien');
-      }
-  
-      // Filtrar los bodegas para excluir a la bodega eliminadada
-      const updatedBodegas = this.state.bodegas.filter(bodega => bodega.bodegaId !== bodegaId);
-      this.setState({
-        bodegas: updatedBodegas,
-        filteredBodegas: updatedBodegas,
-      });
-  
-      console.log('Bodega eliminada correctamente');
-    } catch (error) {
-      console.error('Error al eliminar la bodega:', error);
-      alert('Error al eliminar la bodega. Por favor, inténtalo de nuevo.');
-    }
-  };
-  
 
   handleEdit = bodegaId => {
     const bodega = this.state.bodegas.find(bodega => bodega.bodegaId === bodegaId);
     this.setState({
       nombre: bodega.nombre,
       direccion: bodega.direccion,
-      estado: bodega.estado,
       ciudad: bodega.ciudad,
       editingBodegaId: bodegaId,
       modalVisible: true,
+      isEditing: true,
+    });
+  };
+
+  handleDelete = async bodegaId => {
+    try {
+      const bodega = this.state.bodegas.find(bodega => bodega.bodegaId === bodegaId);
+      const data = {
+        nombre: bodega.nombre,
+        direccion: bodega.direccion,
+        ciudad: bodega.ciudad,
+        estado: 'Desactivado',
+      };
+      await axios.put(`${apiUrl}/${bodegaId}`, data);
+      alert(`Bodega desactivada exitosamente`);
+      this.getBodegas();
+    } catch (error) {
+      alert('Error al desactivar la bodega');
+      console.error(error);
+    }
+  };
+  
+  
+
+  handleAdd = () => {
+    this.setState({
+      modalVisible: true,
+      nombre: '',
+      direccion: '',
+      ciudad: '',
+      editingBodegaId: null,
+      isEditing: false,
     });
   };
 
   handleSave = async () => {
-    const { nombre, direccion, estado, ciudad, editingBodegaId } = this.state;
-    const data = { 
+    const { nombre, direccion, ciudad, editingBodegaId, isEditing } = this.state;
+
+    if (!nombre || !direccion || !ciudad) {
+      alert('Por favor, completa todos los campos.');
+      return;
+    }
+
+    const data = {
       nombre,
       direccion,
-      estado,
-      ciudad
+      ciudad,
+      estado: 'Activo',
     };
 
-    // Validaciones de datos
-    if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/.test(nombre)) {
-      alert('El nombre solo puede contener letras.');
-      return;
-    }
-    
-    // Validación de estado: solo 'Activo' o 'Inactivo'
-    if (estado !== 'Activa' && estado !== 'Inactiva') {
-      alert('Estado inválido. Por favor, ingrese "Activo" o "Inactivo".');
-      return;
-    }
-  
-    if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/.test(ciudad)) {
-      alert('La ciudad solo puede contener letras.');
-      return;
-    }
-
-    const url = editingBodegaId ? `https://localhost:7284/api/bodegas/${editingBodegaId}` : 'https://localhost:7284/api/bodegas';
-    const method = editingBodegaId ? 'PUT' : 'POST';
-
     try {
-      // Realiza la solicitud para guardar los cambios
-      const response = await fetch(url, {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-          'Cache-Control': 'no-cache',
-        },
-        body: JSON.stringify(data),
-      });
-    
-      if (!response.ok) {
-        throw new Error('La respuesta de la red no estuvo bien');
-      }
-    
-      let responseData; 
-    
-      if (response.status === 204) {
-        console.log('No hay contenido para devolver');
+      let response;
+      if (isEditing) {
+        response = await axios.put(`${apiUrl}/${editingBodegaId}`, data);
+        if (response.status >= 200 && response.status < 300) {
+          const updatedBodegas = this.state.bodegas.map(bodega => {
+            if (bodega.bodegaId === editingBodegaId) {
+              return {
+                ...bodega,
+                ...data
+              };
+            }
+            return bodega;
+          });
+
+          this.setState({
+            bodegas: updatedBodegas,
+            filteredBodegas: updatedBodegas,
+            modalVisible: false,
+            nombre: '',
+            direccion: '',
+            ciudad: '',
+            editingBodegaId: null,
+            isEditing: false,
+          });
+          alert('Los datos se han guardado correctamente.');
+        } else {
+          alert('Error al guardar cambios: ' + response.statusText);
+        }
       } else {
-        responseData = await response.json(); // Asigna el valor de responseData
-        console.log('Response:', responseData);
+        response = await axios.post(apiUrl, data);
+        if (response.status >= 200 && response.status < 300) {
+          const nuevaBodega = response.data;
+          this.setState(prevState => ({
+            bodegas: [...prevState.bodegas, nuevaBodega],
+            filteredBodegas: [...prevState.filteredBodegas, nuevaBodega],
+            modalVisible: false,
+            nombre: '',
+            direccion: '',
+            ciudad: '',
+            isEditing: false,
+          }));
+          alert('Bodega agregada correctamente.');
+        } else {
+          alert('Error al agregar la bodega: ' + response.statusText);
+        }
       }
-    
-      // Si estás guardando una nueva bodega, agrega la nueva bodega a la lista actual
-      // Si estás editando una bodega existente, actualiza los datos de la bodega en la lista
-      if (editingBodegaId) {
-        // Actualiza los datos de la bodega en la lista
-        const updatedBodegas = this.state.bodegas.map(bodega => {
-          if (bodega.bodegaId === editingBodegaId) {
-            return { ...bodega, ...data };
-          }
-          return bodega;
-        });
-        this.setState({
-          bodegas: updatedBodegas,
-          filteredBodegas: updatedBodegas, // Actualiza también las bodegas filtrada cliente
-        });
-      } else {
-        // Agrega la nueva bodega a la lista
-        const newBodega = { bodegaId: responseData.bodegaId, ...data };
-        this.setState(prevState => ({
-          bodegas: [...prevState.bodegas, newBodega],
-          filteredBodegas: [...prevState.bodegas, newBodega], // Actualiza también las bodegas filtrados
-        }));
-      }
-    
-      // Limpia el estado y cierra el modal
-      this.setState({
-        modalVisible: false,
-        nombre: '',
-        direccion: '',
-        estado: '',
-        ciudad: '',
-        editingBodegaId: null,
-        isEditing: false,
-        successMessage: 'Los cambios se han guardado correctamente',
-      });
-    
     } catch (error) {
-      console.error('Error al guardar los cambios:', error);
-      alert('Error al guardar los cambios. Por favor, inténtalo de nuevo.');
-    } 
+      console.error('Error saving changes:', error);
+      alert('Error al guardar cambios: ' + error.message);
+    }
   };
-  
 
   render() {
     return (
       <View style={styles.container}>
         <View style={styles.buttonContainer}>
           <TouchableOpacity
-            onPress={() => this.setState({ modalVisible: true })}
+            onPress={this.handleAdd}
             style={{
               backgroundColor: '#440000',
               padding: 10,
@@ -204,93 +188,88 @@ export default class Bodega extends React.Component {
           >
             <Text style={{ color: 'white' }}>Agregar</Text>
           </TouchableOpacity>
-
-          {/* Agregar un View para crear un espacio */}
           <View style={{ width: 10 }} />
-
           <TextInput
             style={styles.searchInput}
             placeholder="Buscar bodega"
             onChangeText={this.handleSearch}
           />
         </View>
-          <View>
-            <View style={styles.row}>
-              <Text style={[styles.tableHeader, { backgroundColor: '#440000' }]}>#</Text>
-              <Text style={[styles.tableHeader, { backgroundColor: '#440000' }]}>BODEGA</Text>
-              <Text style={[styles.tableHeader, { backgroundColor: '#440000' }]}>ESTADO</Text>
-              <Text style={[styles.tableHeader, { backgroundColor: '#440000' }]}>DIRECCIÓN</Text>
-              <Text style={[styles.tableHeader, { backgroundColor: '#440000' }]}>CIUDAD</Text>
-              <View style={[styles.tableHeader, { backgroundColor: '#440000' }]}></View>
-            </View>
+
+        <View>
+          <View style={styles.row}>
+            <Text style={[styles.tableHeader, { flex: 0.5, backgroundColor: '#440000' }]}>#</Text>
+            <Text style={[styles.tableHeader, { flex: 1, backgroundColor: '#440000' }]}>NOMBRE</Text>
+            <Text style={[styles.tableHeader, { flex: 1, backgroundColor: '#440000' }]}>DIRECCIÓN</Text>
+            <Text style={[styles.tableHeader, { flex: 1, backgroundColor: '#440000' }]}>CIUDAD</Text>
+            <View style={[styles.tableHeader, { flex: 1, backgroundColor: '#440000' }]}></View>
           </View>
-        <FlatList
-          contentContainerStyle={styles.tableGroupDivider}
-          data={this.state.filteredBodegas}
-          renderItem={({ item, index }) => (
-            <TouchableOpacity onPress={() => this.handleEdit(item.bodegaId)}>
-              <View style={styles.row}>
-                <Text style={styles.item}>{index + 1}</Text>
-                <Text style={styles.item}>{item.nombre}</Text>
-                <Text style={styles.item}>{item.estado}</Text>
-                <Text style={styles.item}>{item.direccion}</Text>
-                <Text style={styles.item}>{item.ciudad}</Text>
-                <View style={styles.buttonGroup}>
-                  <TouchableOpacity onPress={() => this.handleEdit(item.bodegaId)}>
-                    <Text style={[styles.button, styles.editButton]}>✎</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity onPress={() => this.handleDelete(item.bodegaId)}>
-                    <Text style={[styles.button, styles.deleteButton]}>🗑</Text>
-                  </TouchableOpacity>
+          <FlatList
+            contentContainerStyle={styles.tableGroupDivider}
+            data={this.state.filteredBodegas.filter(bodega => bodega.estado === 'Activo')}
+            renderItem={({ item, index }) => (
+              <TouchableOpacity onPress={() => this.handleEdit(item.bodegaId)}>
+                <View style={styles.row}>
+                  <Text style={[styles.item, { flex: 0.5 }]}>{index + 1}</Text>
+                  <Text style={[styles.item, { flex: 1 }]}>{item.nombre}</Text>
+                  <Text style={[styles.item, { flex: 1 }]}>{item.direccion}</Text>
+                  <Text style={[styles.item, { flex: 1 }]}>{item.ciudad}</Text>
+                  <View style={[styles.buttonGroup, { flex: 1 }]}>
+                    <TouchableOpacity onPress={() => this.handleEdit(item.bodegaId)}>
+                      <Text style={[styles.button, styles.editButton]}>✎</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={() => this.handleDelete(item.bodegaId)}>
+                      <Text style={[styles.button, styles.deleteButton]}>🗑</Text>
+                    </TouchableOpacity>
+                  </View>
                 </View>
-              </View>
-            </TouchableOpacity>
-          )}
-          
-          keyExtractor={item => item.bodegaId}
-        />
-
-      <Modal
-        visible={this.state.modalVisible}
-        animationType="slide"
-        onRequestClose={() => this.setState({ modalVisible: false })}
-      >
-        
-        
-        <View style={styles.modalContainer}>
-          <TextInput
-            placeholder="Nombre"
-            value={this.state.nombre}
-            onChangeText={nombre => this.setState({ nombre })}
-            style={styles.input}
+              </TouchableOpacity>
+            )}
+            keyExtractor={item => item.bodegaId.toString()}
           />
-          <TextInput
-            placeholder="Dirección"
-            value={this.state.direccion}
-            onChangeText={direccion => this.setState({ direccion })}
-            style={styles.input}
-          />
-          <TextInput
-            placeholder="Estado (Activa o Inactiva)"
-            value={this.state.estado}
-            onChangeText={estado => this.setState({ estado })}
-            style={styles.input}
-          />
-          <TextInput
-            placeholder="Ciudad"
-            value={this.state.ciudad}
-            onChangeText={ciudad => this.setState({ ciudad })}
-            style={styles.input}
-          />
-          <TouchableOpacity onPress={this.handleSave} style={styles.buttont}>
-            <Text style={styles.buttonText}>Guardar</Text>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => this.setState({ modalVisible: false })} style={styles.buttont}>
-            <Text style={styles.buttonText}>Cerrar</Text>
-          </TouchableOpacity>
         </View>
-      </Modal>
 
+        <Modal
+          visible={this.state.modalVisible}
+          animationType="slide"
+          onRequestClose={() => {
+            this.setState({ 
+              modalVisible: false,
+              nombre: '',
+              direccion: '',
+              ciudad: '',
+              editingBodegaId: null,
+              isEditing: false,
+            });
+          }}
+        >
+          <View style={styles.modalContainer}>
+            <TextInput
+              placeholder="Nombre"
+              value={this.state.nombre}
+              onChangeText={nombre => this.setState({ nombre })}
+              style={styles.input}
+            />
+            <TextInput
+              placeholder="Dirección"
+              value={this.state.direccion}
+              onChangeText={direccion => this.setState({ direccion })}
+              style={styles.input}
+            />
+            <TextInput
+              placeholder="Ciudad"
+              value={this.state.ciudad}
+              onChangeText={ciudad => this.setState({ ciudad })}
+              style={styles.input}
+            />
+            <TouchableOpacity onPress={this.handleSave} style={styles.button}>
+              <Text style={styles.buttonText}>Guardar</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => this.setState({ modalVisible: false })} style={styles.button}>
+              <Text style={styles.buttonText}>Cerrar</Text>
+            </TouchableOpacity>
+          </View>
+        </Modal>
       </View>
     );
   }
@@ -363,7 +342,7 @@ const styles = StyleSheet.create({
     paddingLeft: 10,
   },
   buttont: {
-    backgroundColor: '#440000', // Color de fondo del botón
+    backgroundColor: 'black', // Color de fondo del botón
     padding: 10, // Espaciado interno del botón
     borderRadius: 50, // Bordes redondeados del botón
     marginBottom: 10, // Espaciado inferior del botón
@@ -384,4 +363,3 @@ const styles = StyleSheet.create({
     backgroundColor: '#dcdcdc',
   },
 });
-
