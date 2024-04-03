@@ -261,7 +261,27 @@ export default class Empleado extends React.Component {
         }
       } else {
         // Si no, hacemos una solicitud POST para agregar un nuevo empleado
-        // Código para agregar un nuevo empleado
+        response = await axios.post(apiUrl, data);
+        if (response.status >= 200 && response.status < 300) {
+          const nuevoEmpleado = response.data;
+          this.setState(prevState => ({
+            empleados: [...prevState.empleados, nuevoEmpleado],
+            filteredEmpleados: [...prevState.filteredEmpleados, nuevoEmpleado],
+            modalVisible: false,
+            nombre: '',
+            apellido: '',
+            documento: '',
+            cargo: '',
+            fechaInicio: '',
+            fechaFin: '',
+            sueldo: '',
+            bodegaId: '',
+            isEditing: false,
+          }));
+          alert('Empleado agregado correctamente.');
+        } else {
+          alert('Error al agregar empleado: ' + response.statusText);
+        }
       }
     } catch (error) {
       // Manejo de errores
@@ -270,6 +290,7 @@ export default class Empleado extends React.Component {
     }
   };
   
+
   
   render() {
     const opcionesCargo = [
@@ -444,75 +465,77 @@ export default class Empleado extends React.Component {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#a9a9a9',
-    padding: 10,
+    backgroundColor: '#fff',
+    alignItems: 'center',
+    justifyContent: 'flex-start', // Cambia de 'center' a 'flex-start'
+    padding: 80,
+    paddingTop: 50, // Añade un padding superior para hacer espacio para la barra de búsqueda
   },
   buttonContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    marginBottom: 10,
+    marginTop: 10, // Añade un margen superior para separar los botones de la barra de búsqueda
   },
   searchInput: {
-    backgroundColor: 'white',
     flex: 1,
-    paddingLeft: 10,
-    borderRadius: 50,
-  },
-  modalContainer: {
-    flex: 1,
-    backgroundColor: '#fff',
-    padding: 20,
-  },
-  input: {
-    backgroundColor: '#f0f0f0',
-    marginBottom: 10,
-    padding: 10,
+    borderColor: '#ccc',
+    borderWidth: 1,
     borderRadius: 5,
-  },
-  button: {
-    backgroundColor: '#440000',
     padding: 10,
-    borderRadius: 5,
-    alignItems: 'center',
-    marginBottom: 10,
-  },
-  buttonText: {
-    color: 'white',
-    fontWeight: 'bold',
-  },
-  tableGroupDivider: {
-    marginBottom: 10,
   },
   row: {
     flexDirection: 'row',
-    marginBottom: 10,
-  },
-  item: {
-    padding: 10,
-    borderWidth: 1,
-    borderColor: '#440000',
-    borderRadius: 5,
-    marginRight: 5,
+    borderBottomWidth: 1,
+    borderBottomColor: '#ccc',
+    paddingVertical: 10,
+    alignItems: 'center',
   },
   tableHeader: {
-    color: 'white',
     fontWeight: 'bold',
     textAlign: 'center',
+    color: 'white',
     padding: 10,
-    borderWidth: 1,
-    borderColor: '#440000',
-    borderRadius: 5,
-    marginRight: 5,
+  },
+  item: {
+    textAlign: 'center',
+    padding: 10,
   },
   buttonGroup: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
   },
+  button: {
+    padding: 5,
+    marginHorizontal: 5,
+    borderRadius: 5,
+  },
   editButton: {
-    backgroundColor: '#6a6aff',
-    marginLeft: 5,
+    backgroundColor: '#3498db',
   },
   deleteButton: {
-    backgroundColor: '#ff6a6a',
-    marginLeft: 5,
+    backgroundColor: '#e74c3c',
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    padding: 20,
+  },
+  input: {
+    width: '100%',
+    backgroundColor: '#fff',
+    borderColor: '#ccc',
+    borderWidth: 1,
+    borderRadius: 5,
+    paddingHorizontal: 10,
+    marginBottom: 10,
+  },
+  saveButton: {
+    backgroundColor: '#440000',
+    padding: 10,
+    borderRadius: 5,
+    marginTop: 10,
+    width: '100%',
   },
 });
