@@ -258,7 +258,6 @@ export default class Productos extends React.Component {
               <Text style={[styles.tableHeader, { flex: 0.5, backgroundColor: '#440000' }]}>#</Text>
               <Text style={[styles.tableHeader, { flex: 2, backgroundColor: '#440000' }]}>NOMBRE PRODUCTO</Text>
               <Text style={[styles.tableHeader, { flex: 2, backgroundColor: '#440000' }]}>PRECIO PRODUCTO</Text>
-              <Text style={[styles.tableHeader, { flex: 2, backgroundColor: '#440000' }]}>CANTIDAD PRODUCTO</Text>
               <Text style={[styles.tableHeader, { flex: 2, backgroundColor: '#440000' }]}>MARCA PRODUCTO</Text>
               <Text style={[styles.tableHeader, { flex: 3, backgroundColor: '#440000' }]}>CLASIFICACIÓN PRODUCTO</Text>
               <View style={[styles.tableHeader, { flex: 3, backgroundColor: '#440000' }]}></View>
@@ -272,7 +271,6 @@ export default class Productos extends React.Component {
                     <Text style={[styles.item, { flex: 0.5 }]}>{index + 1}</Text>
                     <Text style={[styles.item, { flex: 2 }]}>{item.nombreProducto}</Text>
                     <Text style={[styles.item, { flex: 2 }]}>{item.precioProducto}</Text>
-                    <Text style={[styles.item, { flex: 2 }]}>{item.cantidadProducto}</Text>
                     <Text style={[styles.item, { flex: 1 }]}>{item.marcaProducto}</Text>
                     <Text style={[styles.item, { flex: 3 }]}>{item.clasificacionProducto}</Text>
                     <View style={[styles.buttonGroup, { flex: 1 }]}>

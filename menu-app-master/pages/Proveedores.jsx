@@ -1,7 +1,7 @@
 import React from 'react';
-import { StyleSheet, Text, View, FlatList, TextInput, Button, TouchableOpacity, Modal, ScrollView } from 'react-native';
+import { StyleSheet, Text, View, FlatList, TextInput, TouchableOpacity, Modal } from 'react-native';
 
-export default class Proveedores extends React.Component {
+export default class Proveedor extends React.Component {
   constructor(props) {
     super(props);
 
@@ -19,7 +19,7 @@ export default class Proveedores extends React.Component {
       nombreEntidadBancaria: '',
       numeroCuentaBancaria: '',
       editingProveedorId: null,
-      addingProveedor: false, // Nuevo estado para controlar la adición de proveedores
+      isEditing: false,
     };
   }
 
@@ -29,11 +29,17 @@ export default class Proveedores extends React.Component {
 
   getProveedores = () => {
     this.setState({ loading: true });
-    fetch('https://localhost:7284/api/proveedor')
+    fetch('https://localhost:7284/api/proveedor', {
+      method: 'GET', // Método GET
+      headers: {
+        'Cache-Control': 'no-cache', // Encabezado Cache-Control: no-cache
+        'Content-Type': 'application/json',
+      },
+    })
       .then(res => res.json())
       .then(data => {
         this.setState({
-          proveedores: data,
+          bodegas: data,
           filteredProveedores: data,
           loading: false
         });
@@ -46,66 +52,155 @@ export default class Proveedores extends React.Component {
 
   handleSearch = text => {
     const filteredProveedores = this.state.proveedores.filter(proveedor => {
-      return proveedor.nombre.toLowerCase().includes(text.toLowerCase());
+      if (proveedor && proveedor.nombre) {
+        return proveedor.nombre.toLowerCase().includes(text.toLowerCase());
+      }
+      return false;
     });
     this.setState({ filteredProveedores });
   };
+  
 
+  handleDelete = async (proveedorId) => {
+    try {
+      const response = await fetch(`https://localhost:7284/api/proveedor/${proveedorId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'Cache-Control': 'no-cache',
+        },
+      });
+  
+      if (!response.ok) {
+        throw new Error('La respuesta de la red no estuvo bien');
+      }
+  
+      // Filtrar los proveedores para excluir al proveedor eliminado
+      const updatedProveedores = this.state.proveedores.filter(proveedor => proveedor.proveedorId !== proveedorId);
+      this.setState({
+        proveedores: updatedProveedores,
+        filteredProveedores: updatedProveedores,
+      });
+  
+      console.log('Proveedor eliminado correctamente');
+    } catch (error) {
+      console.error('Error al eliminar el proveedor:', error);
+      alert('Error al eliminar el proveedor. Por favor, inténtalo de nuevo.');
+    }
+  };
+
+  
   handleEdit = proveedorId => {
-    const proveedor = this.state.proveedores.find(proveedor => proveedor.id === proveedorId);
+    const proveedor = this.state.proveedores.find(proveedor => proveedor.proveedorId === clienteId);
     this.setState({
       nombre: proveedor.nombre,
-      numDocumento: proveedor.numDocumento.toString(),
-      edad: proveedor.edad.toString(),
+      numDocumento: String(proveedor.numDocumento),
+      edad: String(proveedor.edad),
       direccion: proveedor.direccion, 
       telefono: proveedor.telefono,
       correo: proveedor.correo,
       nombreEntidadBancaria: proveedor.nombreEntidadBancaria,
-      numeroCuentaBancaria: proveedor.numeroCuentaBancaria.toString(),
+      numeroCuentaBancaria: String(proveedor.numeroCuentaBancaria),
       editingProveedorId: proveedorId,
       modalVisible: true,
-      addingProveedor: false, // Asegurarse de que no esté agregando un nuevo proveedor al editar
+      isEditing: true,
     });
   };
 
-  handleDelete = async proveedorId => {
-    try {
-      await fetch(`https://localhost:7284/api/proveedor/${proveedorId}`, { method: 'DELETE' });
-      this.getProveedores();
-    } catch (error) {
-      console.error('Error deleting proveedor:', error);
-    }
-  };
 
   handleSave = async () => {
-    const { nombre, numDocumento, edad, telefono, correo, nombreEntidadBancaria, numeroCuentaBancaria, editingProveedorId, addingProveedor } = this.state;
-    const data = { nombre, numDocumento:parseInt(numDocumento), edad: parseInt(edad),direccion, telefono, correo, nombreEntidadBancaria, numeroCuentaBancaria: parseInt(numeroCuentaBancaria) };
-    const url = editingProveedorId ? `https://localhost:7284/api/proveedor/${editingProveedorId}` : 'https://localhost:7284/api/proveedor';
+    const { nombre, numDocumento, edad, direccion, telefono, correo, nombreEntidadBancaria, numeroCuentaBancaria, editingProveedorId } = this.state;  
+    const data = {
+      nombre,
+      numDocumento: parseInt(numDocumento),
+      edad: parseInt(edad),
+      direccion,
+      telefono,
+      correo,
+      nombreEntidadBancaria,
+      numeroCuentaBancaria: parseInt(numeroCuentaBancaria)
+    };
 
+    //validacion de datos
+  
+    const url = editingProveedorId ? `https://localhost:7284/api/proveedor/${editingProveedorId}` : 'https://localhost:7284/api/proveedor';
+    const method = editingProveedorId ? 'PUT' : 'POST';
+  
     try {
-      const method = editingProveedorId ? 'PUT' : 'POST';
+      // Realiza la solicitud para guardar los cambios
       const response = await fetch(url, {
         method,
         headers: {
           'Content-Type': 'application/json',
+          'Cache-Control': 'no-cache',
         },
         body: JSON.stringify(data),
       });
-      const responseData = await response.json();
-      console.log('Response:', responseData);
-      this.getProveedores();
-      this.setState({ modalVisible: false, nombre: '', numDocumento: '', edad: '', direccion: '', telefono: '', correo: '', nombreEntidadBancaria: '', numeroCuentaBancaria: '', editingProveedorId: null, addingProveedor: false });
+  
+      if (!response.ok) {
+        throw new Error('La respuesta de la red no estuvo bien');
+      }
+  
+      let responseData;
+  
+      if (response.status === 204) {
+        console.log('No hay contenido para devolver');
+      } else {
+        responseData = await response.json(); // Asigna el valor de responseData
+        console.log('Response:', responseData);
+      }
+  
+      if (editingProveedorId) {
+        // Actualiza los datos del proveedor en la lista
+        const updatedProveedores = proveedores.map(proveedor => {
+          if (proveedor.proveedorId === editingProveedorId) {
+            return { ...proveedor, ...data };
+          }
+          return proveedor;
+        });
+        this.setState({
+          proveedores: updatedProveedores,
+          filteredProveedores: updatedProveedores, // Actualiza también los proveedores filtrados
+        });
+      } else {
+        // Agrega el nuevo Proveedor a la lista
+        const newProveedor = { proveedorId: responseData.proveedorId, ...data };
+        this.setState(prevState => ({
+          proveedores: [...prevState.proveedores, newProveedor], // Agrega el nuevo proveedor a la lista existente
+          filteredProveedores: [...prevState.proveedores, newProveedor], // Actualiza también los Proveedores filtrados
+        }));
+      }
+  
+      // Limpia el estado y cierra el modal 
+      this.setState({
+        modalVisible: false,
+        nombre: '',
+        numDocumento: '',
+        edad: '',
+        direccion: '',
+        telefono: '',
+        correo: '',
+        nombreEntidadBancaria: '',
+        numeroCuentaBancaria: '',
+        editingProveedorId: null,
+        isEditing: false,
+        successMessage: 'Los cambios se han guardado correctamente',
+      });
+  
     } catch (error) {
-      console.error('Error saving proveedor:', error);
+      console.error('Error al guardar los cambios:', error);
+      alert('Error al guardar los cambios. Por favor, inténtalo de nuevo.');
     }
   };
+  
+  
 
   render() {
     return (
       <View style={styles.container}>
         <View style={styles.buttonContainer}>
-          <TouchableOpacity
-            onPress={() => this.setState({ modalVisible: true, addingProveedor: true })}
+        <TouchableOpacity
+            onPress={() => this.setState({ modalVisible: true })}
             style={{
               backgroundColor: '#440000',
               padding: 10,
@@ -145,12 +240,12 @@ export default class Proveedores extends React.Component {
               data={this.state.filteredProveedores}
               renderItem={({ item, index }) => (
                 <TouchableOpacity onPress={() => this.handleEdit(item.proveedorId)}>
-                  <View style={styles.row}>
+                  <View style={styles.row} key={item.proveedorId}>
                     <Text style={[styles.item, { flex: 0.5 }]}>{index + 1}</Text>
                     <Text style={[styles.item, { flex: 1 }]}>{item.nombre}</Text>
                     <Text style={[styles.item, { flex: 1 }]}>{item.numDocumento}</Text>
                     <Text style={[styles.item, { flex: 0.5 }]}>{item.edad}</Text>
-                    <Text style={[styles.item, { flex: 0.5 }]}>{item.direccion}</Text>
+                    <Text style={[styles.item, { flex: 1.5 }]}>{item.direccion}</Text>
                     <Text style={[styles.item, { flex: 1.5 }]}>{item.telefono}</Text>
                     <Text style={[styles.item, { flex: 1.5 }]}>{item.correo}</Text>
                     <Text style={[styles.item, { flex: 2 }]}>{item.nombreEntidadBancaria}</Text>
@@ -166,20 +261,33 @@ export default class Proveedores extends React.Component {
                   </View>
                 </TouchableOpacity>
               )}
-              keyExtractor={item => item.proveedorId}
+              keyExtractor={(item, index) => item.proveedorId ? item.proveedorId.toString() : index.toString()}
+
             />
           </View>
         
-
-
-        <Modal
-          visible={this.state.modalVisible}
-          animationType="slide"
-          onRequestClose={() => this.setState({ modalVisible: false })}
-        >
+          <Modal
+            visible={this.state.modalVisible}
+            animationType="slide"
+            onRequestClose={() => {
+              // Limpia el estado y cierra el modal
+              this.setState({ 
+                modalVisible: false, 
+                nombre: '',
+                numDocumento: '',
+                edad: '',
+                direccion: '',
+                telefono: '',
+                correo: '',
+                nombreEntidadBancaria: '',
+                numeroCuentaBancaria: '',
+                editingClienteId: null, 
+                isEditing: false, 
+                successMessage: '', // Limpiar mensaje de éxito al cerrar el modal
+              });
+            }}
+          >
           <View style={styles.modalContainer}>
-            {this.state.addingProveedor && ( // Mostrar los campos solo cuando se agrega un nuevo proveedor
-              <>
                 <TextInput
                   placeholder="Nombre"
                   value={this.state.nombre}
@@ -228,8 +336,6 @@ export default class Proveedores extends React.Component {
                   onChangeText={numeroCuentaBancaria => this.setState({ numeroCuentaBancaria })}
                   style={styles.input}
                 />
-              </>
-            )}
             <TouchableOpacity onPress={this.handleSave} style={styles.buttont}>
               <Text style={styles.buttonText}>Guardar</Text>
             </TouchableOpacity>
@@ -238,7 +344,6 @@ export default class Proveedores extends React.Component {
             </TouchableOpacity>
           </View>
         </Modal>
-
       </View>
     );
   }
