@@ -1,0 +1,13 @@
+.results-list {
+    margin-top: 5px;
+  }
+  .search-result {
+    padding: -8px;
+    cursor: pointer;
+    background-color: #ffffff; /* Fondo blanco */
+    color: #000000; /* Texto negro */
+  }
+  .search-result:hover {
+    background-color: #efefef;
+  }
+  

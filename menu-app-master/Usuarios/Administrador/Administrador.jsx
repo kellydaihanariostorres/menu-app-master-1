@@ -12,6 +12,7 @@ import FactProveedor from '../../pages/FactProveedor';
 import FactCliente from '../../pages/FactCliente';
 import Productos from '../../pages/Productos';
 
+
 const Menu = createDrawerNavigator();
 
 export default function Administrador() {

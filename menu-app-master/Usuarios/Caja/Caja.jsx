@@ -12,6 +12,7 @@ import FactProveedor from '../../pages/FactProveedor';
 import FactCliente from '../../pages/FactCliente';
 import RegCliente from '../../pages/RegCliente';
 import Productos from '../../pages/Productos';
+import Factura from '../../pages/Factura_Cliente/Index';
 
 const Menu = createDrawerNavigator();
 
@@ -44,7 +45,7 @@ export default function Administrador() {
       }}
     />
         <Menu.Screen name="REGISTRO CLIENTES" component={RegCliente} />
-        <Menu.Screen name="FACTURAS CLIENTE" component={FactCliente} />
+        <Menu.Screen name="FACTURAS " component={Factura} />
        
        
     </Menu.Navigator>
