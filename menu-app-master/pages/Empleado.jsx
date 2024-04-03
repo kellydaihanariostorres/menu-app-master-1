@@ -16,7 +16,6 @@ if (typeof window !== 'undefined') {
   };
 }
 
-
 const apiUrl = 'https://localhost:7284/api/empleados';
 
 export default class Empleado extends React.Component {
@@ -179,14 +178,27 @@ export default class Empleado extends React.Component {
   };
 
   handleSave = async () => {
-    const { nombre, apellido, documento, cargo, fechaInicio, fechaFin, sueldo, bodegaId } = this.state;
-    
+    const {
+      nombre,
+      apellido,
+      documento,
+      cargo,
+      fechaInicio,
+      fechaFin,
+      sueldo,
+      bodegaId,
+      editingEmpleadoId,
+      isEditing,
+      empleados,
+      filteredEmpleados
+    } = this.state;
+  
     // Verificar si alguno de los campos está vacío
     if (!nombre || !apellido || !documento || !cargo || !fechaInicio || !fechaFin || !sueldo || !bodegaId) {
       alert('Por favor, completa todos los campos.');
       return;
     }
-
+  
     const data = {
       nombre,
       apellido,
@@ -198,41 +210,67 @@ export default class Empleado extends React.Component {
       bodegaId,
       estado: 'Activo',
     };
-
+  
     try {
-      const response = await axios.post(apiUrl, data);
-      if (response.status === 201) {
-        // Si la respuesta es 201, el registro se ha creado exitosamente
-        const nuevoEmpleado = response.data;
-        this.setState(prevState => ({
-          empleados: [...prevState.empleados, nuevoEmpleado],
-          filteredEmpleados: [...prevState.filteredEmpleados, nuevoEmpleado],
-        }));
-        // Mostrar mensaje de éxito
-        alert('Nuevo registro agregado exitosamente');
+      let response;
+      if (isEditing) {
+        // Si estamos editando, hacemos una solicitud PUT
+        response = await axios.put(`${apiUrl}/${editingEmpleadoId}`, data);
+        if (response.status >= 200 && response.status < 300) {
+          // Si la respuesta fue exitosa, actualizamos el estado local con los datos editados
+          const updatedEmpleados = empleados.map(empleado => {
+            if (empleado.empleadoId === editingEmpleadoId) {
+              return {
+                ...empleado,
+                ...data
+              };
+            }
+            return empleado;
+          });
+  
+          // Actualizar también filteredEmpleados si es necesario
+          const updatedFilteredEmpleados = filteredEmpleados.map(empleado => {
+            if (empleado.empleadoId === editingEmpleadoId) {
+              return {
+                ...empleado,
+                ...data
+              };
+            }
+            return empleado;
+          });
+  
+          this.setState({
+            empleados: updatedEmpleados,
+            filteredEmpleados: updatedFilteredEmpleados,
+            modalVisible: false,
+            nombre: '',
+            apellido: '',
+            documento: '',
+            cargo: '',
+            fechaInicio: '',
+            fechaFin: '',
+            sueldo: '',
+            bodegaId: '',
+            editingEmpleadoId: null,
+            isEditing: false,
+          });
+          alert('Los datos se han guardado correctamente.');
+        } else {
+          // Si la respuesta del servidor indica un error, mostramos un mensaje apropiado
+          alert('Error al guardar cambios: ' + response.statusText);
+        }
       } else {
-        // Si la respuesta no es 201, mostrar un mensaje de error
-        throw new Error('La respuesta del servidor no fue exitosa');
+        // Si no, hacemos una solicitud POST para agregar un nuevo empleado
+        // Código para agregar un nuevo empleado
       }
-
-      this.setState({
-        modalVisible: false,
-        nombre: '',
-        apellido: '',
-        documento: '',
-        cargo: '',
-        fechaInicio: '',
-        fechaFin: '',
-        sueldo: '',
-        bodegaId: '',
-        successMessage: 'Los cambios se han guardado correctamente',
-      });
     } catch (error) {
+      // Manejo de errores
       console.error('Error saving changes:', error);
-      // No mostrar la alerta de error aquí
+      alert('Error al guardar cambios: ' + error.message); // Mostramos el mensaje de error recibido
     }
   };
-
+  
+  
   render() {
     const opcionesCargo = [
       { label: 'Seleccionar Cargo', value: '' },
