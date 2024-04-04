@@ -58,7 +58,7 @@ function EnterpriseInfo() {
         setError("Error al obtener empleados");
       }
     };
-    
+
 
     fetchClientes();
     fetchEmpleados();
@@ -68,6 +68,14 @@ function EnterpriseInfo() {
     const fechaFormateada = `${fecha.getDate()}/${fecha.getMonth() + 1}/${fecha.getFullYear()}`;
     setFechaActual(fechaFormateada);
   }, [buscarCliente]);
+
+  useEffect(() => {
+    // Efecto para restablecer el estado cuando mostrarDetalleFactura cambie a false
+    if (!mostrarDetalleFactura) {
+      setFacturaCreada(false);
+      setMostrarBotones(true);
+    }
+  }, [mostrarDetalleFactura]);
 
   const handleInputChange = (event) => {
     const input = event.target.value;
@@ -108,6 +116,7 @@ function EnterpriseInfo() {
       setMostrarDetalleFactura(true);
       setMostrarBotones(false);
       setFacturaCreada(true);
+      
       
     } catch (error) {
       console.error("Error al crear la factura:", error);
@@ -165,6 +174,9 @@ function EnterpriseInfo() {
     setDocumentoClienteEncontrado(""); // Reset documentoClienteEncontrado
   };
 
+  console.log("mostrarDetalleFactura:", mostrarDetalleFactura);
+console.log("mostrarBotones:", mostrarBotones);
+
   return (
     <>
       <form
@@ -184,17 +196,17 @@ function EnterpriseInfo() {
             <div className="row">
               <div className="col-md-6">
                 <p>Fecha actual:</p>
-                <p>{fechaActual}</p>
+                <p style={{ backgroundColor: "white", borderRadius: "10px", padding: "10px", border: "1px solid black"}}>{fechaActual}</p>
               </div>
               <div className="col-md-6">
                 <p>Direccion:</p>
-                <p>Calle 57</p>
+                <p style={{ backgroundColor: "white", borderRadius: "10px", padding: "10px", border: "1px solid black"}}>Calle 57</p>
               </div>
             </div>
             <div className="row">
               <div className="col-md-6">
                 <p>Telefono:</p>
-                <p>3142678354</p>
+                <p style={{ backgroundColor: "white", borderRadius: "10px", padding: "10px", border: "1px solid black"}}>3142678354</p>
               </div>
               <div className="col-md-6">
                 <p>Empleado:</p>
@@ -203,6 +215,7 @@ function EnterpriseInfo() {
                   value={empleadoSeleccionado}
                   onChange={handleEmpleadoChange}
                   disabled={facturaCreada}
+                  style={{ backgroundColor: "white", borderRadius: "10px", padding: "10px", border: "1px solid black"}}
                 >
                   <option value="">Seleccionar empleado</option>
                   {empleados.map((empleado) => (
@@ -216,11 +229,16 @@ function EnterpriseInfo() {
             <h1>Informacion del cliente</h1>
             {clienteRegistrado && (
               <div>
-                <p className="text-success">Cliente existente.</p>
+                <p className="text-success" style={{color:'green'}}>Cliente existente.</p>
                 <p>Número de documento: </p>
-                <p>{clienteRegistrado.numDocumento}</p>
+                <p style={{ backgroundColor: "white", borderRadius: "10px", padding: "10px", border: "1px solid black"}}>{clienteRegistrado.numDocumento}</p>
                 {mostrarBotones && (
-                  <button type="button" className="btn btn-primary mt-2" onClick={handleCancelarCliente}>
+                  <button type="button" className="btn btn-primary mt-2" onClick={handleCancelarCliente} style={{backgroundColor: "red",
+                  borderRadius: "50px",
+                  color: "white",
+                  padding: "10px 20px",
+                  border: "none",
+                  cursor: "pointer" }}>
                     Quitar Cliente
                   </button>
                 )}
@@ -230,11 +248,16 @@ function EnterpriseInfo() {
               <div style={{ marginTop: '10px' }}>
                 {documentoClienteEncontrado && (
                   <div>
-                    <p className="text-danger">
+                    <p className="text-danger" style={{color:'red'}}>
                       El cliente con número de documento {documentoClienteEncontrado} está desactivado.
                     </p>
                     {mostrarBotones && (
-                      <button type="button" className="btn btn-primary mt-2" onClick={handleCancelarCliente}>
+                      <button type="button" className="btn btn-primary mt-2" onClick={handleCancelarCliente} style={{backgroundColor: "red",
+                      borderRadius: "50px",
+                      color: "white",
+                      padding: "10px 20px",
+                      border: "none",
+                      cursor: "pointer" }}>
                         Quitar Cliente
                       </button>
                     )}
@@ -260,8 +283,14 @@ function EnterpriseInfo() {
                   aria-label="Número de documento"
                   name="numeroDocumento"
                   id="numeroDocumento"
+                  style={{ backgroundColor: "white", borderRadius: "10px", padding: "10px", border: "1px solid black"}}
                 />
-                <button type="button" className="btn btn-primary mt-2" onClick={handleBuscarCliente}>
+                <button type="button" className="btn btn-primary mt-2" onClick={handleBuscarCliente} style={{backgroundColor: "blue",
+                        borderRadius: "50px",
+                        color: "white",
+                        padding: "10px 20px",
+                        border: "none",
+                        cursor: "pointer" }}>
                   Buscar Cliente
                 </button>
                 {error && <p className="text-danger">{error}</p>}
@@ -269,8 +298,13 @@ function EnterpriseInfo() {
             )}
             {!clienteExistente && mostrarFormularioRegistro && (
               <div className="d-grid">
-                <p className="text-danger mt-2">Cliente no encontrado. Por favor, registre al cliente.</p>
-                <button type="button" className="btn btn-primary mt-2" onClick={handleCancelarRegistro}>
+                <p className="text-danger mt-2" style={{color:'red'}}>Cliente no encontrado. Por favor, registre al cliente.</p>
+                <button type="button" className="btn btn-primary mt-2" onClick={handleCancelarRegistro} style={{backgroundColor: "red",
+                        borderRadius: "50px",
+                        color: "white",
+                        padding: "10px 20px",
+                        border: "none",
+                        cursor: "pointer" }}>
                   Cancelar
                 </button>
               </div>
@@ -282,19 +316,31 @@ function EnterpriseInfo() {
             <div style={{ padding: '10px' }}>
               {mostrarDetalleFactura && (
                 <div>
-                  <Detallefactura idFactura={idFacturaCreada} />
+                   <Detallefactura
+                    idFactura={idFacturaCreada}
+                    setClienteRegistrado={setClienteRegistrado}
+                    setDocumentoClienteEncontrado={setDocumentoClienteEncontrado}
+                    setBuscarCliente={setBuscarCliente}
+                    setNumeroDocumento={setNumeroDocumento}
+                    setMostrarDetalleFactura={setMostrarDetalleFactura}
+                  />
                 </div>
               )}
             </div>
           </div>
         </div>
-        {mostrarBotones && (
+        {!mostrarDetalleFactura && mostrarBotones && !facturaCreada && (
           <div>
-            <button type="button" className="btn btn-primary mt-2" onClick={crearFactura}>
+            <button type="button" className="btn btn-primary mt-2" onClick={crearFactura} style={{backgroundColor: "green",
+                        borderRadius: "50px",
+                        color: "white",
+                        padding: "10px 20px",
+                        border: "none",
+                        cursor: "pointer" }}>
               Comenzar Factura
             </button>
           </div>
-        )}     
+        )}
       </form>
     </>
   );

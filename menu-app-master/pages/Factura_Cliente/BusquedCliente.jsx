@@ -94,7 +94,7 @@ class RegistroCliente extends Component {
       <div>
         {error && <p className="text-danger">{error}</p>}
         {registroExitoso && (
-          <p className="text-success">Cliente registrado exitosamente.</p>
+          <p className="text-success" style={{color:'green'}}>Cliente registrado exitosamente.</p>
         )}
         <div>
           <h2>Registro de Cliente</h2>
@@ -111,6 +111,7 @@ class RegistroCliente extends Component {
                   value={cliente.nombre}
                   onChange={this.handleInputChange}
                   required
+                  style={{ backgroundColor: "white", borderRadius: "10px", padding: "10px", border: "1px solid black"}}
                 />
               </div>
               <div className="col"  style={{ padding: '-60vh', margin: "0 auto", marginBottom: "10px", display: "inline-block" }}>
@@ -124,6 +125,7 @@ class RegistroCliente extends Component {
                   value={cliente.apellido}
                   onChange={this.handleInputChange}
                   required
+                  style={{ backgroundColor: "white", borderRadius: "10px", padding: "10px", border: "1px solid black"}}
                 />
               </div>
             </div>
@@ -139,6 +141,7 @@ class RegistroCliente extends Component {
                   value={cliente.edad}
                   onChange={this.handleInputChange}
                   required
+                  style={{ backgroundColor: "white", borderRadius: "10px", padding: "10px", border: "1px solid black"}}
                 />
               </div>
               <div className="col"style={{ padding: '-60vh', margin: "0 auto", marginBottom: "10px", display: "inline-block" }}>
@@ -153,6 +156,7 @@ class RegistroCliente extends Component {
                   onChange={this.handleInputChange}
                   disabled
                   required
+                  style={{ backgroundColor: "white", borderRadius: "10px", padding: "10px", border: "1px solid black"}}
                 />
               </div>
             </div>
@@ -168,6 +172,7 @@ class RegistroCliente extends Component {
                   value={cliente.numDocumento}
                   onChange={this.handleInputChange}
                   required
+                  style={{ backgroundColor: "white", borderRadius: "10px", padding: "10px", border: "1px solid black"}}
                 />
               </div>
               <div className="col"style={{ padding: '-60vh', margin: "0 auto", marginBottom: "10px", display: "inline-block" }}>
@@ -181,10 +186,16 @@ class RegistroCliente extends Component {
                   value={cliente.correo}
                   onChange={this.handleInputChange}
                   required
+                  style={{ backgroundColor: "white", borderRadius: "10px", padding: "10px", border: "1px solid black"}}
                 />
               </div>
             </div>
-            <button type="submit" className="btn btn-success mt-2" onClick={this.handleFormSubmit} disabled={loading}>
+            <button type="submit" className="btn btn-success mt-2" onClick={this.handleFormSubmit} disabled={loading} style={{backgroundColor: "blue",
+                        borderRadius: "50px",
+                        color: "white",
+                        padding: "10px 20px",
+                        border: "none",
+                        cursor: "pointer" }}>
               {loading ? "Registrando..." : "Registrar"}
             </button>
           </form>

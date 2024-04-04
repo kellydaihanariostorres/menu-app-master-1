@@ -30,12 +30,7 @@ class SearchBar extends Component {
     this.fetchData(value);
   };
 
-  componentDidUpdate(prevProps) {
-    // Limpiar el campo de búsqueda cuando cambian los resultados
-    if (prevProps.setResults !== this.props.setResults) {
-      this.setState({ input: "" });
-    }
-  }
+ 
 
   render() {
     return (

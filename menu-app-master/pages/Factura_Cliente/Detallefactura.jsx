@@ -118,82 +118,101 @@ class CrearFacturaComponent extends Component {
             });
 
             this.setState({ productos: [], detalleProductos: [] });
-
-            window.location.reload(); // Recargar la página
+            
+            await this.handleFacturaImpresa(); // Solo necesitas esta llamada aquí
+            this.props.setMostrarDetalleFactura(false); 
+            alert("¡La factura se ha impreso exitosamente!");
+        
         } catch (error) {
             console.error("Error al imprimir la factura:", error);
             alert("Ocurrió un error al imprimir la factura. Por favor, inténtalo de nuevo.");
         }
     };
 
+    handleFacturaImpresa = () => {
+        // Reiniciar el estado relacionado con el cliente utilizando las props proporcionadas por EnterpriseInfo
+        this.props.setClienteRegistrado(null);
+        this.props.setDocumentoClienteEncontrado("");
+        this.props.setBuscarCliente(false);
+        this.props.setNumeroDocumento(""); // Limpiar número de documento ingresado
+    };
+    
+    
+
     render() {
         const { productos, detalleProductos } = this.state;
 
         return (
-            <div className="container mt-3 mb-3" style={{ backgroundColor: "white", width: "80%", margin: "0 auto" }}>
-                <div style={{ height: "auto", marginLeft: '50%', height: "10vh" }}>
-                    <SearchComponent
-                        productList={productos}
-                        handleSuggestionClick={this.handleAgregarProducto}
-                        setResults={productos => this.setState({ productos })}
-                    />
-                </div>
-
-                <div className="card card-body table-responsive mt-3" style={{ backgroundColor: "white", height: "auto" }}>
-                    <table className="table table-hover">
-                        <thead>
-                            <tr>
-                                <th>ID Producto</th>
-                                <th>Nombre</th>
-                                <th>Cantidad</th>
-                                <th>Precio Unitario</th>
-                                <th></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {productos.map((producto, index) => (
-                                <tr key={`${producto.idProducto}-${index}`}>
-                                    <td>{producto.idProducto}</td>
-                                    <td>{producto.nombreProducto}</td>
-                                    <td>
-                                        <input
-                                            type="number"
-                                            value={producto.cantidad}
-                                            onChange={(e) => this.handleEditarCantidad(producto.idProducto, parseInt(e.target.value))}
-                                        />
-                                    </td>
-                                    <td>{producto.precioProducto}</td>
-                                    <td>
-                                        <button className="btn btn-danger" onClick={() => this.handleEliminarProducto(index)}>Eliminar</button>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-
-                <div style={{ textAlign: "right" }}>
-                    <div style={{ color: "black", border: "1px solid black", padding: "3px 70px", marginBottom: "10px", display: "inline-block" }}>
-                        <p>Subt: {detalleProductos.subtotal}</p>
-                    </div>
-                    <div style={{ color: "black", border: "1px solid black", padding: "3px 70px", marginBottom: "10px", display: "inline-block" }}>
-                        <p>IVA: {detalleProductos.iva}</p>
-                    </div>
-                    <div style={{ color: "black", border: "1px solid black", padding: "3px 70px", marginBottom: "10px", display: "inline-block" }}>
-                        <p>Total: {detalleProductos.total}</p>
-                    </div>
-                </div>
-
-                <div>
-                    <button onClick={this.handleImprimirFactura} style={{
-                        backgroundColor: "green",
+            <div className="container mt-3 mb-3">
+                <div className="row">
+                    <div className="col-lg-8 mx-auto">
+                        <div className="row">
+                            <div className="col-lg-12">
+                            <div style={{ height: "auto", marginLeft: '50%', height: "10vh" }}>
+                                <SearchComponent
+                                    productList={productos}
+                                    handleSuggestionClick={this.handleAgregarProducto}
+                                    setResults={productos => this.setState({ productos })}
+                                />
+                            </div>
+                                <div className="card card-body table-responsive mt-3">
+                                    <table className="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>ID Producto</th>
+                                                <th>Nombre</th>
+                                                <th>Cantidad</th>
+                                                <th>Precio Unitario</th>
+                                                <th></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {productos.map((producto, index) => (
+                                                <tr key={`${producto.idProducto}-${index}`}>
+                                                    <td>{producto.idProducto}</td>
+                                                    <td>{producto.nombreProducto}</td>
+                                                    <td>
+                                                        <input
+                                                            type="number"
+                                                            value={producto.cantidad}
+                                                            onChange={(e) => this.handleEditarCantidad(producto.idProducto, parseInt(e.target.value))}
+                                                        />
+                                                    </td>
+                                                    <td>{producto.precioProducto}</td>
+                                                    <td>
+                                                        <button className="btn btn-danger" onClick={() => this.handleEliminarProducto(index)}>
+                                                            Eliminar
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div className="text-right">
+                                    <div className="subtotal-box">
+                                        <p>Subt: {detalleProductos.subtotal}</p>
+                                    </div>
+                                    <div className="iva-box">
+                                        <p>IVA: {detalleProductos.iva}</p>
+                                    </div>
+                                    <div className="total-box">
+                                        <p>Total: {detalleProductos.total}</p>
+                                    </div>
+                                </div>
+                                <div className="text-center">
+                                    <button onClick={this.handleImprimirFactura} className="btn btn-primary"style={{backgroundColor: "green",
                         borderRadius: "50px",
                         color: "white",
                         padding: "10px 20px",
                         border: "none",
-                        cursor: "pointer"
-                    }}>Imprimir Factura
-                    </button>
+                        cursor: "pointer" }}>
+                                        Imprimir Factura
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         );
