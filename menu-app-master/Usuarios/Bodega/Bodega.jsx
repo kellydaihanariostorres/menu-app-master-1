@@ -11,7 +11,8 @@ import Registro from '../../pages/Registro';
 import FactProveedor from '../../pages/FactProveedor';
 import FactCliente from '../../pages/FactCliente';
 import Productos from '../../pages/Productos';
-import Pedidos from '../../pages/Pedidos';
+import Pedidos from '../../pages/Factura_proveedor/Pedidos';
+import detalle from '../../pages/Factura_proveedor/Detallefactura';
 
 
 const Menu = createDrawerNavigator();

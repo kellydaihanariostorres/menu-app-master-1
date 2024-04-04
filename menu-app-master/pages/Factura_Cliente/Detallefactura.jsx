@@ -202,11 +202,11 @@ class CrearFacturaComponent extends Component {
                                 </div>
                                 <div className="text-center">
                                     <button onClick={this.handleImprimirFactura} className="btn btn-primary"style={{backgroundColor: "green",
-                        borderRadius: "50px",
-                        color: "white",
-                        padding: "10px 20px",
-                        border: "none",
-                        cursor: "pointer" }}>
+                                        borderRadius: "50px",
+                                        color: "white",
+                                        padding: "10px 20px",
+                                        border: "none",
+                                        cursor: "pointer" }}>
                                         Imprimir Factura
                                     </button>
                                 </div>
